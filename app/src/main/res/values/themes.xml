@@ -1,0 +1,8 @@
+<resources>
+    <style name="Theme.Verbum" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.Verbum.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#FFF5FFF5</item>
+        <item name="postSplashScreenTheme">@style/Theme.Verbum</item>
+    </style>
+</resources>
