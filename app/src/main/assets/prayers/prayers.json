@@ -1,0 +1,146 @@
+[
+  {
+    "id": "sign_of_cross",
+    "title": "Sign of the Cross",
+    "category": "devotion",
+    "text": "In the name of the Father, and of the Son, and of the Holy Ghost. Amen.",
+    "latinText": "In nomine Patris, et Filii, et Spiritus Sancti. Amen.",
+    "seasonRecommendation": null,
+    "orderIndex": 1
+  },
+  {
+    "id": "our_father",
+    "title": "Our Father",
+    "category": "devotion",
+    "text": "Our Father, who art in heaven, hallowed be thy name. Thy kingdom come. Thy will be done on earth, as it is in heaven. Give us this day our daily bread, and forgive us our trespasses, as we forgive those who trespass against us. And lead us not into temptation, but deliver us from evil. Amen.",
+    "latinText": "Pater noster, qui es in caelis, sanctificetur nomen tuum. Adveniat regnum tuum. Fiat voluntas tua, sicut in caelo, et in terra. Panem nostrum quotidianum da nobis hodie, et dimitte nobis debita nostra, sicut et nos dimittimus debitoribus nostris. Et ne nos inducas in tentationem; sed libera nos a malo. Amen.",
+    "seasonRecommendation": null,
+    "orderIndex": 2
+  },
+  {
+    "id": "hail_mary",
+    "title": "Hail Mary",
+    "category": "devotion",
+    "text": "Hail Mary, full of grace, the Lord is with thee. Blessed art thou amongst women, and blessed is the fruit of thy womb, Jesus. Holy Mary, Mother of God, pray for us sinners, now and at the hour of our death. Amen.",
+    "latinText": "Ave Maria, gratia plena, Dominus tecum. Benedicta tu in mulieribus, et benedictus fructus ventris tui, Iesus. Sancta Maria, Mater Dei, ora pro nobis peccatoribus, nunc et in hora mortis nostrae. Amen.",
+    "seasonRecommendation": null,
+    "orderIndex": 3
+  },
+  {
+    "id": "glory_be",
+    "title": "Glory Be",
+    "category": "devotion",
+    "text": "Glory be to the Father, and to the Son, and to the Holy Ghost. As it was in the beginning, is now, and ever shall be, world without end. Amen.",
+    "latinText": "Gloria Patri, et Filio, et Spiritui Sancto. Sicut erat in principio, et nunc, et semper, et in saecula saeculorum. Amen.",
+    "seasonRecommendation": null,
+    "orderIndex": 4
+  },
+  {
+    "id": "apostles_creed",
+    "title": "Apostles' Creed",
+    "category": "devotion",
+    "text": "I believe in God, the Father Almighty, Creator of heaven and earth; and in Jesus Christ, His only Son, our Lord; who was conceived by the Holy Ghost, born of the Virgin Mary, suffered under Pontius Pilate, was crucified, died, and was buried. He descended into hell; the third day He rose again from the dead; He ascended into heaven, and sitteth at the right hand of God, the Father Almighty; from thence He shall come to judge the living and the dead. I believe in the Holy Ghost, the holy Catholic Church, the communion of saints, the forgiveness of sins, the resurrection of the body, and life everlasting. Amen.",
+    "latinText": null,
+    "seasonRecommendation": null,
+    "orderIndex": 5
+  },
+  {
+    "id": "morning_offering",
+    "title": "Morning Offering",
+    "category": "morning",
+    "text": "O Jesus, through the Immaculate Heart of Mary, I offer Thee my prayers, works, joys, and sufferings of this day for all the intentions of Thy Sacred Heart, in union with the Holy Sacrifice of the Mass throughout the world, in reparation for my sins, for the intentions of all my relatives and friends, and in particular for the intentions of the Holy Father. Amen.",
+    "latinText": null,
+    "seasonRecommendation": null,
+    "orderIndex": 6
+  },
+  {
+    "id": "angelus",
+    "title": "Angelus",
+    "category": "devotion",
+    "text": "The Angel of the Lord declared unto Mary. And she conceived by the Holy Ghost. Hail Mary... Behold the handmaid of the Lord. Be it done unto me according to thy word. Hail Mary... And the Word was made flesh. And dwelt among us. Hail Mary... Pray for us, O holy Mother of God. That we may be made worthy of the promises of Christ. Let us pray: Pour forth, we beseech Thee, O Lord, Thy grace into our hearts; that we, to whom the Incarnation of Christ Thy Son was made known by the message of an angel, may by His Passion and Cross be brought to the glory of His Resurrection. Through the same Christ our Lord. Amen.",
+    "latinText": null,
+    "seasonRecommendation": "ADVENT",
+    "orderIndex": 7
+  },
+  {
+    "id": "regina_caeli",
+    "title": "Regina Caeli",
+    "category": "devotion",
+    "text": "Queen of Heaven, rejoice, alleluia. For He whom you did merit to bear, alleluia, has risen as He said, alleluia. Pray for us to God, alleluia. Rejoice and be glad, O Virgin Mary, alleluia. For the Lord is truly risen, alleluia.",
+    "latinText": "Regina caeli, laetare, alleluia. Quia quem meruisti portare, alleluia. Resurrexit, sicut dixit, alleluia. Ora pro nobis Deum, alleluia.",
+    "seasonRecommendation": "EASTER",
+    "orderIndex": 8
+  },
+  {
+    "id": "act_of_contrition",
+    "title": "Act of Contrition",
+    "category": "evening",
+    "text": "O my God, I am heartily sorry for having offended Thee, and I detest all my sins because I dread the loss of heaven and the pains of hell, but most of all because they offend Thee, my God, who art all-good and deserving of all my love. I firmly resolve, with the help of Thy grace, to confess my sins, to do penance, and to amend my life. Amen.",
+    "latinText": null,
+    "seasonRecommendation": null,
+    "orderIndex": 9
+  },
+  {
+    "id": "st_michael_prayer",
+    "title": "Prayer to Saint Michael",
+    "category": "saints",
+    "text": "Saint Michael the Archangel, defend us in battle. Be our protection against the wickedness and snares of the devil. May God rebuke him, we humbly pray; and do thou, O Prince of the heavenly hosts, by the power of God cast into hell Satan and all the evil spirits who prowl through the world seeking the ruin of souls. Amen.",
+    "latinText": null,
+    "seasonRecommendation": null,
+    "orderIndex": 10
+  },
+  {
+    "id": "memorare",
+    "title": "Memorare",
+    "category": "devotion",
+    "text": "Remember, O most gracious Virgin Mary, that never was it known that anyone who fled to thy protection, implored thy help, or sought thy intercession was left unaided. Inspired by this confidence, I fly unto thee, O Virgin of virgins, my Mother. To thee I come, before thee I stand, sinful and sorrowful. O Mother of the Word Incarnate, despise not my petitions, but in thy mercy hear and answer me. Amen.",
+    "latinText": null,
+    "seasonRecommendation": null,
+    "orderIndex": 11
+  },
+  {
+    "id": "anima_christi",
+    "title": "Anima Christi",
+    "category": "devotion",
+    "text": "Soul of Christ, sanctify me. Body of Christ, save me. Blood of Christ, inebriate me. Water from the side of Christ, wash me. Passion of Christ, strengthen me. O good Jesus, hear me. Within Thy wounds hide me. Suffer me not to be separated from Thee. From the malignant enemy defend me. In the hour of my death call me, and bid me come unto Thee, that with Thy saints I may praise Thee forever and ever. Amen.",
+    "latinText": null,
+    "seasonRecommendation": "LENT",
+    "orderIndex": 12
+  },
+  {
+    "id": "magnificat",
+    "title": "Magnificat",
+    "category": "evening",
+    "text": "My soul magnifies the Lord, and my spirit rejoices in God my Savior, for He has regarded the low estate of His handmaid. For behold, henceforth all generations shall call me blessed; for He who is mighty has done great things for me, and holy is His name.",
+    "latinText": null,
+    "seasonRecommendation": "ADVENT",
+    "orderIndex": 13
+  },
+  {
+    "id": "te_deum",
+    "title": "Te Deum (Opening)",
+    "category": "devotion",
+    "text": "O God, we praise Thee: we acknowledge Thee to be the Lord. Everlasting Father, all the earth doth worship Thee.",
+    "latinText": "Te Deum laudamus: te Dominum confitemur. Te aeternum Patrem omnis terra veneratur.",
+    "seasonRecommendation": "CHRISTMAS",
+    "orderIndex": 14
+  },
+  {
+    "id": "come_holy_spirit",
+    "title": "Come, Holy Spirit",
+    "category": "devotion",
+    "text": "Come, Holy Spirit, fill the hearts of Thy faithful and enkindle in them the fire of Thy love. Send forth Thy Spirit and they shall be created. And Thou shalt renew the face of the earth.",
+    "latinText": "Veni, Sancte Spiritus, reple tuorum corda fidelium et tui amoris in eis ignem accende.",
+    "seasonRecommendation": "PENTECOST",
+    "orderIndex": 15
+  },
+  {
+    "id": "guardian_angel",
+    "title": "Guardian Angel Prayer",
+    "category": "evening",
+    "text": "Angel of God, my guardian dear, to whom God's love commits me here, ever this day be at my side to light and guard, to rule and guide. Amen.",
+    "latinText": null,
+    "seasonRecommendation": null,
+    "orderIndex": 16
+  }
+]

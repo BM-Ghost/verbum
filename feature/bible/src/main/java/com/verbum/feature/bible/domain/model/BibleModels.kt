@@ -8,6 +8,11 @@ data class BibleBook(
     val totalChapters: Int,
 )
 
+data class BibleLanguage(
+    val code: String,
+    val displayName: String,
+)
+
 enum class Testament(val displayName: String) {
     OLD("Old Testament"),
     NEW("New Testament"),

@@ -1,0 +1,57 @@
+---
+book_id: NAM
+book_title: Nahum
+chapters:
+  c:001:
+    verses:
+      v:001: 'NAM:1:1 | 1 | 1 | Onus Ninive. Liber visionis Nahum Elcesæi.{VS:P}'
+      v:002: 'NAM:1:2 | 2 | 2 | {VS:VERSE:BEGIN}Deus æmulator, et ulciscens Dominus :{VS:BR} ulciscens Dominus, et habens furorem :{VS:BR} ulciscens Dominus in hostes suos,{VS:BR} et irascens ipse inimicis suis.{VS:BR}'
+      v:003: 'NAM:1:3 | 3 | 3 | Dominus patiens, et magnus fortitudine,{VS:BR} et mundans non faciet innocentem.{VS:BR} Dominus in tempestate et turbine viæ ejus,{VS:BR} et nebulæ pulvis pedum ejus.{VS:BR}'
+      v:004: 'NAM:1:4 | 4 | 4 | Increpans mare, et exsiccans illud,{VS:BR} et omnia flumina ad desertum deducens.{VS:BR} Infirmatus est Basan et Carmelus,{VS:BR} et flos Libani elanguit.{VS:BR}'
+      v:005: 'NAM:1:5 | 5 | 5 | Montes commoti sunt ab eo,{VS:BR} et colles desolati sunt :{VS:BR} et contremuit terra a facie ejus,{VS:BR} et orbis, et omnes habitantes in eo.{VS:BR}'
+      v:006: 'NAM:1:6 | 6 | 6 | Ante faciem indignationis ejus quis stabit ?{VS:BR} et quis resistet in ira furoris ejus ?{VS:BR} Indignatio ejus effusa est ut ignis,{VS:BR} et petræ dissolutæ sunt ab eo.{VS:BR}'
+      v:007: 'NAM:1:7 | 7 | 7 | Bonus Dominus,{VS:BR} et confortans in die tribulationis,{VS:BR} et sciens sperantes in se.{VS:BR}'
+      v:008: 'NAM:1:8 | 8 | 8 | Et in diluvio prætereunte consummationem faciet loci ejus,{VS:BR} et inimicos ejus persequentur tenebræ.{VS:BR}'
+      v:009: 'NAM:1:9 | 9 | 9 | Quid cogitatis contra Dominum ?{VS:BR} Consummationem ipse faciet :{VS:BR} non consurget duplex tribulatio,{VS:BR}'
+      v:010: 'NAM:1:10 | 10 | 10 | quia sicut spinæ se invicem complectuntur,{VS:BR} sic convivium eorum pariter potantium ;{VS:BR} consumentur quasi stipula ariditate plena.{VS:BR}'
+      v:011: 'NAM:1:11 | 11 | 11 | Ex te exibit cogitans contra Dominum malitiam,{VS:BR} mente pertractans prævaricationem.{VS:BR}'
+      v:012: 'NAM:1:12 | 12 | 12 | Hæc dicit Dominus :{VS:BR} Si perfecti fuerint, et ita plures,{VS:BR} sic quoque attondentur, et pertransibit :{VS:BR} afflixi te, et non affligam te ultra.{VS:BR}'
+      v:013: 'NAM:1:13 | 13 | 13 | Et nunc conteram virgam ejus de dorso tuo,{VS:BR} et vincula tua disrumpam.{VS:BR}'
+      v:014: 'NAM:1:14 | 14 | 14 | Et præcipiet super te Dominus ;{VS:BR} non seminabitur ex nomine tuo amplius :{VS:BR} de domo Dei tui interficiam sculptile, et conflatile ;{VS:BR} ponam sepulchrum tuum, quia inhonoratus es.{VS:BR}'
+      v:015: 'NAM:1:15 | 15 | 15 | Ecce super montes pedes evangelizantis,{VS:BR} et annuntiantis pacem.{VS:BR} Celebra, Juda, festivitates tuas,{VS:BR} et redde vota tua,{VS:BR} quia non adjiciet ultra ut pertranseat in te Belial :{VS:BR} universus interiit.{VS:VERSE:END}'
+  c:002:
+    verses:
+      v:001: 'NAM:2:1 | 1 | 1 | {VS:VERSE:BEGIN}Ascendit qui dispergat coram te,{VS:BR} qui custodiat obsidionem :{VS:BR} contemplare viam, conforta lumbos,{VS:BR} robora virtutem valde.{VS:BR}'
+      v:002: 'NAM:2:2 | 2 | 2 | Quia reddidit Dominus superbiam Jacob,{VS:BR} sicut superbiam Israël ;{VS:BR} quia vastatores dissipaverunt eos,{VS:BR} et propagines eorum corruperunt.{VS:BR}'
+      v:003: 'NAM:2:3 | 3 | 3 | Clypeus fortium ejus ignitus,{VS:BR} viri exercitus in coccineis ;{VS:BR} igneæ habenæ currus in die præparationis ejus,{VS:BR} et agitatores consopiti sunt.{VS:BR}'
+      v:004: 'NAM:2:4 | 4 | 4 | In itineribus conturbati sunt ;{VS:BR} quadrigæ collisæ sunt in plateis :{VS:BR} aspectus eorum quasi lampades,{VS:BR} quasi fulgura discurrentia.{VS:BR}'
+      v:005: 'NAM:2:5 | 5 | 5 | Recordabitur fortium suorum ;{VS:BR} ruent in itineribus suis :{VS:BR} velociter ascendent muros ejus,{VS:BR} et præparabitur umbraculum.{VS:BR}'
+      v:006: 'NAM:2:6 | 6 | 6 | Portæ fluviorum apertæ sunt,{VS:BR} et templum ad solum dirutum.{VS:BR}'
+      v:007: 'NAM:2:7 | 7 | 7 | Et miles captivus abductus est,{VS:BR} et ancillæ ejus minabantur gementes ut columbæ,{VS:BR} murmurantes in cordibus suis.{VS:BR}'
+      v:008: 'NAM:2:8 | 8 | 8 | Et Ninive quasi piscina aquarum aquæ ejus ;{VS:BR} ipsi vero fugerunt. State, state !{VS:BR} et non est qui revertatur.{VS:BR}'
+      v:009: 'NAM:2:9 | 9 | 9 | Diripite argentum, diripite aurum :{VS:BR} et non est finis divitiarum ex omnibus vasis desiderabilibus.{VS:BR}'
+      v:010: 'NAM:2:10 | 10 | 10 | Dissipata est, et scissa, et dilacerata ;{VS:BR} et cor tabescens, et dissolutio geniculorum,{VS:BR} et defectio in cunctis renibus,{VS:BR} et facies omnium eorum sicut nigredo ollæ.{VS:BR}'
+      v:011: 'NAM:2:11 | 11 | 11 | Ubi est habitaculum leonum,{VS:BR} et pascua catulorum leonum,{VS:BR} ad quam ivit leo ut ingrederetur illuc catulus leonis,{VS:BR} et non est qui exterreat ?{VS:BR}'
+      v:012: 'NAM:2:12 | 12 | 12 | Leo cepit sufficienter catulis suis,{VS:BR} et necavit leænis suis,{VS:BR} et implevit præda speluncas suas,{VS:BR} et cubile suum rapina.{VS:BR}'
+      v:013: 'NAM:2:13 | 13 | 13 | Ecce ego ad te, dicit Dominus exercituum,{VS:BR} et succendam usque ad fumum quadrigas tuas,{VS:BR} et leunculos tuos comedet gladius,{VS:BR} et exterminabo de terra prædam tuam,{VS:BR} et non audietur ultra vox nuntiorum tuorum.{VS:VERSE:END}'
+  c:003:
+    verses:
+      v:001: 'NAM:3:1 | 1 | 1 | {VS:VERSE:BEGIN}Væ civitas sanguinum,{VS:BR} universa mendacii dilaceratione plena !{VS:BR} non recedet a te rapina.{VS:BR}'
+      v:002: 'NAM:3:2 | 2 | 2 | Vox flagelli, et vox impetus rotæ, et equi frementis,{VS:BR} et quadrigæ ferventis, et equitis ascendentis,{VS:BR}'
+      v:003: 'NAM:3:3 | 3 | 3 | et micantis gladii, et fulgurantis hastæ,{VS:BR} et multitudinis interfectæ, et gravis ruinæ ;{VS:BR} nec est finis cadaverum,{VS:BR} et corruent in corporibus suis.{VS:BR}'
+      v:004: 'NAM:3:4 | 4 | 4 | Propter multitudinem fornicationum meretricis{VS:BR} speciosæ, et gratæ, et habentis maleficia,{VS:BR} quæ vendidit gentes in fornicationibus suis,{VS:BR} et familias in maleficiis suis.{VS:BR}'
+      v:005: 'NAM:3:5 | 5 | 5 | Ecce ego ad te, dicit Dominus exercituum,{VS:BR} et revelabo pudenda tua in facie tua ;{VS:BR} et ostendam gentibus nuditatem tuam,{VS:BR} et regnis ignominiam tuam.{VS:BR}'
+      v:006: 'NAM:3:6 | 6 | 6 | Et projiciam super te abominationes,{VS:BR} et contumeliis te afficiam,{VS:BR} et ponam te in exemplum.{VS:BR}'
+      v:007: 'NAM:3:7 | 7 | 7 | Et erit : omnis qui viderit te resiliet a te,{VS:BR} et dicet : Vastata est Ninive.{VS:BR} Quis commovebit super te caput ?{VS:BR} unde quæram consolatorem tibi ?{VS:BR}'
+      v:008: 'NAM:3:8 | 8 | 8 | Numquid melior es Alexandria populorum,{VS:BR} quæ habitat in fluminibus ?{VS:BR} aquæ in circuitu ejus ;{VS:BR} cujus divitiæ, mare ;{VS:BR} aquæ, muri ejus.{VS:BR}'
+      v:009: 'NAM:3:9 | 9 | 9 | Æthiopia fortitudo ejus, et Ægyptus, et non est finis ;{VS:BR} Africa et Libyes fuerunt in auxilio tuo.{VS:BR}'
+      v:010: 'NAM:3:10 | 10 | 10 | Sed et ipsa in transmigrationem ducta est in captivitatem :{VS:BR} parvuli ejus elisi sunt in capite omnium viarum,{VS:BR} et super inclytos ejus miserunt sortem,{VS:BR} et omnes optimates ejus confixi sunt in compedibus.{VS:BR}'
+      v:011: 'NAM:3:11 | 11 | 11 | Et tu ergo inebriaberis, et eris despecta :{VS:BR} et tu quæres auxilium ab inimico.{VS:BR}'
+      v:012: 'NAM:3:12 | 12 | 12 | Omnes munitiones tuæ sicut ficus cum grossis suis :{VS:BR} si concussæ fuerint, cadent in os comedentis.{VS:BR}'
+      v:013: 'NAM:3:13 | 13 | 13 | Ecce populus tuus mulieres in medio tui :{VS:BR} inimicis tuis adapertione pandentur portæ terræ tuæ,{VS:BR} devorabit ignis vectes tuos.{VS:BR}'
+      v:014: 'NAM:3:14 | 14 | 14 | Aquam propter obsidionem hauri tibi :{VS:BR} exstrue munitiones tuas,{VS:BR} intra in lutum, et calca,{VS:BR} subigens tene laterem.{VS:BR}'
+      v:015: 'NAM:3:15 | 15 | 15 | Ibi comedet te ignis,{VS:BR} peribis gladio, devorabit te ut bruchus :{VS:BR} congregare ut bruchus,{VS:BR} multiplicare ut locusta.{VS:BR}'
+      v:016: 'NAM:3:16 | 16 | 16 | Plures fecisti negotiationes tuas quam stellæ sint cæli ;{VS:BR} bruchus expansus est, et avolavit.{VS:BR}'
+      v:017: 'NAM:3:17 | 17 | 17 | Custodes tui quasi locustæ,{VS:BR} et parvuli tui quasi locustæ locustarum,{VS:BR} quæ considunt in sepibus in die frigoris :{VS:BR} sol ortus est, et avolaverunt,{VS:BR} et non est cognitus locus earum ubi fuerint.{VS:BR}'
+      v:018: 'NAM:3:18 | 18 | 18 | Dormitaverunt pastores tui, rex Assur,{VS:BR} sepelientur principes tui :{VS:BR} latitavit populus tuus in montibus,{VS:BR} et non est qui congreget.{VS:BR}'
+      v:019: 'NAM:3:19 | 19 | 19 | Non est obscura contritio tua ;{VS:BR} pessima est plaga tua.{VS:BR} Omnes qui audierunt auditionem tuam compresserunt manum super te :{VS:BR} quia super quem non transiit malitia tua semper ?{VS:VERSE:END}'

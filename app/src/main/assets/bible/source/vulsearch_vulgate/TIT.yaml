@@ -1,0 +1,56 @@
+---
+book_id: TIT
+book_title: ad Titum
+chapters:
+  c:001:
+    verses:
+      v:001: 'TIT:1:1 | 1 | 1 | Paulus servus Dei, Apostolus autem Jesu Christi secundum fidem electorum Dei, et agnitionem veritatis, quæ secundum pietatem est'
+      v:002: 'TIT:1:2 | 2 | 2 | in spem vitæ æternæ, quam promisit qui non mentitur, Deus, ante tempora sæcularia :'
+      v:003: 'TIT:1:3 | 3 | 3 | manifestavit autem temporibus suis verbum suum in prædicatione, quæ credita est mihi secundum præceptum Salvatoris nostri Dei :'
+      v:004: 'TIT:1:4 | 4 | 4 | Tito dilecto filio secundum communem fidem, gratia, et pax a Deo Patre, et Christo Jesu Salvatore nostro.{VS:P}'
+      v:005: 'TIT:1:5 | 5 | 5 | Hujus rei gratia reliqui te Cretæ, ut ea quæ desunt, corrigas, et constituas per civitates presbyteros, sicut et ego disposui tibi,'
+      v:006: 'TIT:1:6 | 6 | 6 | si quis sine crimine est, unius uxoris vir, filios habens fideles, non in accusatione luxuriæ, aut non subditos.'
+      v:007: 'TIT:1:7 | 7 | 7 | Oportet enim episcopum sine crimine esse, sicut Dei dispensatorem : non superbum, non iracundum, non vinolentum, non percussorem, non turpis lucri cupidum :'
+      v:008: 'TIT:1:8 | 8 | 8 | sed hospitalem, benignum, sobrium, justum, sanctum, continentem,'
+      v:009: 'TIT:1:9 | 9 | 9 | amplectentem eum, qui secundum doctrinam est, fidelem sermonem : ut potens sit exhortari in doctrina sana, et eos qui contradicunt, arguere.{VS:P}'
+      v:010: 'TIT:1:10 | 10 | 10 | Sunt enim multi etiam inobedientes, vaniloqui, et seductores : maxime qui de circumcisione sunt :'
+      v:011: 'TIT:1:11 | 11 | 11 | quos oportet redargui : qui universas domos subvertunt, docentes quæ non oportet, turpis lucri gratia.'
+      v:012: 'TIT:1:12 | 12 | 12 | Dixit quidam ex illis, proprius ipsorum propheta : Cretenses semper mendaces, malæ bestiæ, ventres pigri.'
+      v:013: 'TIT:1:13 | 13 | 13 | Testimonium hoc verum est. Quam ob causam increpa illos dure, ut sani sint in fide,'
+      v:014: 'TIT:1:14 | 14 | 14 | non intendentes judaicis fabulis, et mandatis hominum, aversantium se a veritate.'
+      v:015: 'TIT:1:15 | 15 | 15 | Omnia munda mundis : coinquinatis autem et infidelibus, nihil est mundum, sed inquinatæ sunt eorum et mens et conscientia.'
+      v:016: 'TIT:1:16 | 16 | 16 | Confitentur se nosse Deum, factis autem negant : cum sint abominati, et incredibiles, et ad omne opus bonum reprobi.'
+  c:002:
+    verses:
+      v:001: 'TIT:2:1 | 1 | 1 | Tu autem loquere quæ decent sanam doctrinam :'
+      v:002: 'TIT:2:2 | 2 | 2 | senes ut sobrii sint, pudici, prudentes, sani in fide, in dilectione, in patientia :'
+      v:003: 'TIT:2:3 | 3 | 3 | anus similiter in habitu sancto, non criminatrices, non multo vino servientes, bene docentes :'
+      v:004: 'TIT:2:4 | 4 | 4 | ut prudentiam doceant adolescentulas, ut viros suos ament, filios suos diligant,'
+      v:005: 'TIT:2:5 | 5 | 5 | prudentes, castas, sobrias, domus curam habentes, benignas, subditas viris suis, ut non blasphemetur verbum Dei.'
+      v:006: TIT:2:6 | 6 | 6 | Juvenes similiter hortare ut sobrii sint.
+      v:007: 'TIT:2:7 | 7 | 7 | In omnibus teipsum præbe exemplum bonorum operum, in doctrina, in integritate, in gravitate,'
+      v:008: 'TIT:2:8 | 8 | 8 | verbum sanum, irreprehensibile : ut is qui ex adverso est, vereatur, nihil habens malum dicere de nobis.'
+      v:009: 'TIT:2:9 | 9 | 9 | Servos dominis suis subditos esse, in omnibus placentes, non contradicentes,'
+      v:010: 'TIT:2:10 | 10 | 10 | non fraudantes, sed in omnibus fidem bonam ostendentes : ut doctrinam Salvatoris nostri Dei ornent in omnibus.'
+      v:011: 'TIT:2:11 | 11 | 11 | Apparuit enim gratia Dei Salvatoris nostri omnibus hominibus,'
+      v:012: 'TIT:2:12 | 12 | 12 | erudiens nos, ut abnegantes impietatem, et sæcularia desideria, sobrie, et juste, et pie vivamus in hoc sæculo,'
+      v:013: 'TIT:2:13 | 13 | 13 | exspectantes beatam spem, et adventum gloriæ magni Dei, et Salvatoris nostri Jesu Christi :'
+      v:014: 'TIT:2:14 | 14 | 14 | qui dedit semetipsum pro nobis, ut nos redimeret ab omni iniquitate, et mundaret sibi populum acceptabilem, sectatorem bonorum operum.'
+      v:015: 'TIT:2:15 | 15 | 15 | Hæc loquere, et exhortare, et argue cum omni imperio. Nemo te contemnat.'
+  c:003:
+    verses:
+      v:001: 'TIT:3:1 | 1 | 1 | Admone illos principibus, et potestatibus subditos esse, dicto obedire, ad omne opus bonum paratos esse :'
+      v:002: 'TIT:3:2 | 2 | 2 | neminem blasphemare, non litigiosos esse, sed modestos, omnem ostendentes mansuetudinem ad omnes homines.'
+      v:003: 'TIT:3:3 | 3 | 3 | Eramus enim aliquando et nos insipientes, increduli, errantes, servientes desideriis, et voluptatibus variis, in malitia et invidia agentes, odibiles, odientes invicem.'
+      v:004: 'TIT:3:4 | 4 | 4 | Cum autem benignitas et humanitas apparuit Salvatoris nostri Dei,'
+      v:005: 'TIT:3:5 | 5 | 5 | non ex operibus justitiæ, quæ fecimus nos, sed secundum suam misericordiam salvos nos fecit per lavacrum regenerationis et renovationis Spiritus Sancti,'
+      v:006: 'TIT:3:6 | 6 | 6 | quem effudit in nos abunde per Jesum Christum Salvatorem nostrum :'
+      v:007: 'TIT:3:7 | 7 | 7 | ut justificati gratia ipsius, hæredes simus secundum spem vitæ æternæ.'
+      v:008: 'TIT:3:8 | 8 | 8 | Fidelis sermo est : et de his volo te confirmare : ut curent bonis operibus præesse qui credunt Deo. Hæc sunt bona, et utilia hominibus.'
+      v:009: 'TIT:3:9 | 9 | 9 | Stultas autem quæstiones, et genealogias, et contentiones, et pugnas legis devita : sunt enim inutiles, et vanæ.'
+      v:010: 'TIT:3:10 | 10 | 10 | Hæreticum hominem post unam et secundam correptionem devita :'
+      v:011: 'TIT:3:11 | 11 | 11 | sciens quia subversus est, qui ejusmodi est, et delinquit, cum sit proprio judicio condemnatus.{VS:P}'
+      v:012: 'TIT:3:12 | 12 | 12 | Cum misero ad te Artemam, aut Tychicum, festina ad me venire Nicopolim : ibi enim statui hiemare.'
+      v:013: 'TIT:3:13 | 13 | 13 | Zenam legisperitum et Apollo sollicite præmitte, ut nihil illis desit.'
+      v:014: 'TIT:3:14 | 14 | 14 | Discant autem et nostri bonis operibus præesse ad usus necessarios : ut non sint infructuosi.'
+      v:015: 'TIT:3:15 | 15 | 15 | Salutant te qui mecum sunt omnes : saluta eos qui nos amant in fide. Gratia Dei cum omnibus vobis. Amen.'

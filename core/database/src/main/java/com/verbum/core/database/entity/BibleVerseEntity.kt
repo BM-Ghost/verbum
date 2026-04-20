@@ -6,7 +6,7 @@ import androidx.room.Index
 
 @Entity(
     tableName = "bible_verses",
-    primaryKeys = ["bookId", "chapter", "verse"],
+    primaryKeys = ["languageCode", "bookId", "chapter", "verse"],
     foreignKeys = [
         ForeignKey(
             entity = BibleBookEntity::class,
@@ -15,9 +15,15 @@ import androidx.room.Index
             onDelete = ForeignKey.CASCADE,
         ),
     ],
-    indices = [Index("bookId"), Index("bookId", "chapter")],
+    indices = [
+        Index("bookId"),
+        Index("languageCode"),
+        Index("languageCode", "bookId"),
+        Index("languageCode", "bookId", "chapter"),
+    ],
 )
 data class BibleVerseEntity(
+    val languageCode: String,
     val bookId: Int,
     val chapter: Int,
     val verse: Int,

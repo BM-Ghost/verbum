@@ -13,6 +13,9 @@ interface PrayerDao {
     @Query("SELECT * FROM prayers ORDER BY orderIndex ASC")
     fun getAllPrayers(): Flow<List<PrayerEntity>>
 
+    @Query("SELECT COUNT(*) FROM prayers")
+    suspend fun countPrayers(): Int
+
     @Query("SELECT * FROM prayers WHERE category = :category ORDER BY orderIndex ASC")
     fun getPrayersByCategory(category: String): Flow<List<PrayerEntity>>
 

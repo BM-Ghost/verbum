@@ -1,0 +1,14 @@
+[
+  {"date":"01-01","name":"Solemnity of Mary, Mother of God","type":"SOLEMNITY","rank":1},
+  {"date":"01-06","name":"Epiphany of the Lord","type":"SOLEMNITY","rank":1},
+  {"date":"02-02","name":"Presentation of the Lord","type":"FEAST","rank":2},
+  {"date":"03-19","name":"Saint Joseph, Spouse of the Blessed Virgin Mary","type":"SOLEMNITY","rank":1},
+  {"date":"03-25","name":"Annunciation of the Lord","type":"SOLEMNITY","rank":1},
+  {"date":"06-24","name":"Nativity of Saint John the Baptist","type":"SOLEMNITY","rank":1},
+  {"date":"06-29","name":"Saints Peter and Paul, Apostles","type":"SOLEMNITY","rank":1},
+  {"date":"08-15","name":"Assumption of the Blessed Virgin Mary","type":"SOLEMNITY","rank":1},
+  {"date":"11-01","name":"All Saints","type":"SOLEMNITY","rank":1},
+  {"date":"11-02","name":"Commemoration of All the Faithful Departed","type":"COMMEMORATION","rank":3},
+  {"date":"12-08","name":"Immaculate Conception of the Blessed Virgin Mary","type":"SOLEMNITY","rank":1},
+  {"date":"12-25","name":"Nativity of the Lord","type":"SOLEMNITY","rank":1}
+]

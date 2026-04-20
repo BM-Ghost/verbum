@@ -15,6 +15,7 @@ datastore = "1.1.1"
 coil = "2.7.0"
 accompanist = "0.34.0"
 lifecycle = "2.8.4"
+paging = "3.3.2"
 coreKtx = "1.13.1"
 activityCompose = "1.9.1"
 splashscreen = "1.0.1"
@@ -37,6 +38,8 @@ androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx"
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+androidx-paging-runtime = { module = "androidx.paging:paging-runtime-ktx", version.ref = "paging" }
+androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
 
@@ -62,6 +65,7 @@ hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", ve
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+room-paging = { module = "androidx.room:room-paging", version.ref = "room" }
 
 # Network
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }

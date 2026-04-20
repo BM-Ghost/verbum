@@ -1,7 +1,9 @@
 package com.verbum.feature.prayer.di
 
 import com.verbum.feature.prayer.data.PrayerRepository
+import com.verbum.feature.prayer.data.PrayerRepositoryContractImpl
 import com.verbum.feature.prayer.data.PrayerRepositoryImpl
+import com.verbum.feature.prayer.domain.contract.PrayerRepositoryContract
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -15,4 +17,8 @@ abstract class PrayerModule {
     @Binds
     @Singleton
     abstract fun bindPrayerRepository(impl: PrayerRepositoryImpl): PrayerRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPrayerRepositoryContract(impl: PrayerRepositoryContractImpl): PrayerRepositoryContract
 }

@@ -11,7 +11,13 @@ import kotlinx.coroutines.flow.Flow
 interface MissalDao {
 
     @Query("SELECT * FROM missal_readings WHERE date = :date ORDER BY readingType ASC")
+    suspend fun getReadingsByDateImmediate(date: String): List<MissalReadingEntity>
+
+    @Query("SELECT * FROM missal_readings WHERE date = :date ORDER BY readingType ASC")
     fun getReadingsByDate(date: String): Flow<List<MissalReadingEntity>>
+
+    @Query("SELECT COUNT(*) FROM missal_readings")
+    suspend fun countReadings(): Int
 
     @Query("SELECT * FROM missal_readings WHERE date BETWEEN :startDate AND :endDate ORDER BY date ASC")
     fun getReadingsInRange(startDate: String, endDate: String): Flow<List<MissalReadingEntity>>
