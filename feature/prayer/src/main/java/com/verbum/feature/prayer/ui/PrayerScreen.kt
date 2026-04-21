@@ -39,7 +39,10 @@ import com.verbum.core.ui.components.VerbumErrorState
 import com.verbum.core.ui.components.VerbumLoadingIndicator
 import com.verbum.core.ui.theme.CrimsonTextFamily
 import com.verbum.core.ui.theme.VerbumSpacing
-import com.verbum.core.ui.theme.VerbumScreenPreviews
+import androidx.compose.material3.Surface
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import com.verbum.core.ui.theme.VerbumPreviewVariant
+import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
 import com.verbum.core.ui.theme.VerbumTheme
 import com.verbum.feature.prayer.domain.model.Prayer
 import com.verbum.feature.prayer.domain.model.PrayerCategory
@@ -185,9 +188,11 @@ private fun PrayerItem(
 
 @Preview(showBackground = true)
 @Composable
-private fun PrayerScreenPreview() {
-    VerbumScreenPreviews { season, darkTheme ->
-        VerbumTheme(liturgicalSeason = season, darkTheme = darkTheme) {
+private fun PrayerScreenPreview(
+    @PreviewParameter(VerbumPreviewVariantProvider::class) variant: VerbumPreviewVariant,
+) {
+    VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             PrayerContent(
                 uiState = PrayerUiState.Loaded(
                     prayersByCategory = mapOf(

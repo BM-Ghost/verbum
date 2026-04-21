@@ -35,36 +35,59 @@ tasks.register("verifyVerbumGuidelines") {
         kotlinFiles.forEach { file ->
             val relativePath = file.relativeTo(rootDir).invariantSeparatorsPath
             val content = file.readText()
+            val lines = content.split("\n")
 
-            if (forceUnwrapRegex.containsMatchIn(content)) {
-                violations += "$relativePath: avoid force-unwrapping style operators (unsafe null handling)."
+            // Check force unwrap (!!) operators
+            lines.forEachIndexed { index, line ->
+                if (forceUnwrapRegex.containsMatchIn(line)) {
+                    violations += "$relativePath:${index + 1}: Unsafe null handling - avoid force-unwrap (!!) operators"
+                }
             }
 
-            if (!relativePath.startsWith("core/ui/src/main/java/com/verbum/core/ui/theme/") &&
-                hardcodedColorRegex.containsMatchIn(content)
-            ) {
-                violations += "$relativePath: hardcoded hex colors are not allowed outside the theme system."
+            // Check hardcoded colors
+            val isInThemePackage = relativePath.startsWith("core/ui/src/main/java/com/verbum/core/ui/theme/") ||
+                relativePath.contains("feature/bible/src/main/java/com/verbum/feature/bible/ui/reading/theme/")
+            if (!isInThemePackage) {
+                lines.forEachIndexed { index, line ->
+                    if (hardcodedColorRegex.containsMatchIn(line)) {
+                        violations += "$relativePath:${index + 1}: Hardcoded hex colors not allowed outside theme system"
+                    }
+                }
             }
 
+            // Check DAO imports
             val isUiLayer = relativePath.contains("/ui/") || relativePath.endsWith("ViewModel.kt")
-            if (isUiLayer && daoImportRegex.containsMatchIn(content)) {
-                violations += "$relativePath: UI/ViewModel layer cannot import DAO types directly. Use repositories/services."
+            if (isUiLayer) {
+                lines.forEachIndexed { index, line ->
+                    if (daoImportRegex.containsMatchIn(line)) {
+                        violations += "$relativePath:${index + 1}: UI/ViewModel cannot import DAO types - use repositories/services"
+                    }
+                }
             }
 
+            // Check AI API calls
             val canCallAiApi = relativePath.startsWith("feature/ai-verbum/src/main/java/com/verbum/feature/ai/data/")
-            if (!canCallAiApi && aiApiCallRegex.containsMatchIn(content)) {
-                violations += "$relativePath: AI endpoint calls must be routed through feature/ai-verbum data layer."
+            if (!canCallAiApi) {
+                lines.forEachIndexed { index, line ->
+                    if (aiApiCallRegex.containsMatchIn(line)) {
+                        violations += "$relativePath:${index + 1}: AI endpoint calls must route through feature/ai-verbum data layer"
+                    }
+                }
             }
 
+            // Check screen previews
             val isScreenFile =
                 relativePath.contains("/src/main/java/") &&
                     relativePath.endsWith("Screen.kt")
             if (isScreenFile) {
                 if (!content.contains("@Preview")) {
-                    violations += "$relativePath: screen-level composables must define previews."
+                    violations += "$relativePath: Missing @Preview decorator - screen-level composables must define previews"
                 }
-                if (!content.contains("VerbumScreenPreviews")) {
-                    violations += "$relativePath: screen previews must include light/dark and liturgical season variants via VerbumScreenPreviews."
+                val hasPreviewMatrix = content.contains("VerbumScreenPreviews") ||
+                    content.contains("VerbumPreviewVariantProvider")
+                if (!hasPreviewMatrix) {
+                    violations +=
+                        "$relativePath: Missing preview variant matrix - use VerbumScreenPreviews or @PreviewParameter(VerbumPreviewVariantProvider::class)"
                 }
             }
         }
@@ -79,16 +102,37 @@ tasks.register("verifyVerbumGuidelines") {
             .toList()
 
         if (unitTestFiles.isEmpty()) {
-            violations += "No unit tests found in src/test directories. Add unit tests for domain and service logic."
+            violations += "Missing unit tests: No tests found in src/test directories. Add unit tests for domain and service logic."
         }
 
         if (violations.isNotEmpty()) {
             throw GradleException(
                 buildString {
-                    appendLine("Verbum guideline verification failed:")
-                    violations.forEach { violation -> appendLine(" - $violation") }
+                    appendLine()
+                    appendLine("╔════════════════════════════════════════════════════════════════╗")
+                    appendLine("║  ❌ Verbum Engineering Guideline Violations Detected  ❌        ║")
+                    appendLine("╚════════════════════════════════════════════════════════════════╝")
+                    appendLine()
+                    violations.forEach { violation -> appendLine("  $violation") }
+                    appendLine()
+                    appendLine("📖 See README.md for complete Engineering Guidelines")
+                    appendLine("🔧 Fix violations and re-run: ./gradlew verifyVerbumGuidelines")
+                    appendLine()
                 },
             )
+        } else {
+            println()
+            println("╔════════════════════════════════════════════════════════════════╗")
+            println("║  ✅ All Engineering Guidelines Verified Successfully  ✅      ║")
+            println("╚════════════════════════════════════════════════════════════════╝")
+            println()
+            println("  ✓ No unsafe null handling (!! operators)")
+            println("  ✓ No hardcoded colors outside theme packages")
+            println("  ✓ No DAO imports in UI/ViewModel layers")
+            println("  ✓ No direct API calls outside data layers")
+            println("  ✓ All screens have previews with theme variants")
+            println("  ✓ Unit tests present")
+            println()
         }
     }
 }

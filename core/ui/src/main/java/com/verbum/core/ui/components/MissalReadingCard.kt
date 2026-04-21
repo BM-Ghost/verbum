@@ -13,9 +13,13 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.verbum.core.ui.theme.ScriptureTypography
+import androidx.compose.material3.Surface
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import com.verbum.core.ui.theme.VerbumPreviewVariant
+import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
+import com.verbum.core.ui.theme.VerbumTheme
 import com.verbum.core.ui.theme.VerbumShapes
 import com.verbum.core.ui.theme.VerbumSpacing
-import com.verbum.core.ui.theme.VerbumTheme
 
 @Composable
 fun MissalReadingCard(
@@ -55,13 +59,17 @@ fun MissalReadingCard(
 
 @Preview(showBackground = true)
 @Composable
-private fun MissalReadingCardPreview() {
-    VerbumTheme {
-        MissalReadingCard(
+private fun MissalReadingCardPreview(
+    @PreviewParameter(VerbumPreviewVariantProvider::class) variant: VerbumPreviewVariant,
+) {
+    VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            MissalReadingCard(
             readingLabel = "FIRST READING",
             reference = "Isaiah 7:10-14",
             text = "The Lord spoke to Ahaz: Ask for a sign from the Lord, your God; let it be deep as the nether world, or high as the sky!",
-            modifier = Modifier.padding(16.dp),
-        )
+                modifier = Modifier.padding(16.dp),
+            )
+        }
     }
 }

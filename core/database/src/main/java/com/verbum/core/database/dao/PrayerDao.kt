@@ -34,4 +34,7 @@ interface PrayerDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPrayers(prayers: List<PrayerEntity>)
+
+    @Query("DELETE FROM prayers WHERE id NOT IN (:ids)")
+    suspend fun deletePrayersNotIn(ids: List<String>)
 }

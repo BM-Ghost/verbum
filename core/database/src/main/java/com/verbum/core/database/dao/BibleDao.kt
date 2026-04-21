@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import androidx.paging.PagingSource
 import com.verbum.core.database.entity.BibleBookEntity
 import com.verbum.core.database.entity.BibleVerseEntity
@@ -31,6 +32,9 @@ interface BibleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBooks(books: List<BibleBookEntity>)
 
+    @Update
+    suspend fun updateBooks(books: List<BibleBookEntity>)
+
     @Query("SELECT COUNT(*) FROM bible_books")
     suspend fun countBooks(): Int
 
@@ -55,18 +59,49 @@ interface BibleDao {
     )
         suspend fun searchVerses(query: String, languageCode: String, limit: Int = 50): List<BibleVerseEntity>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertVerses(verses: List<BibleVerseEntity>)
+    @Query(
+        """
+        SELECT * FROM bible_verses 
+                WHERE languageCode = :languageCode
+                    AND bookId = :bookId
+                    AND chapter = :chapter
+                    AND verse = :verse
+        LIMIT 1
+        """
+    )
+    suspend fun getExactVerse(bookId: Int, chapter: Int, verse: Int, languageCode: String): BibleVerseEntity?
 
-    @Query("SELECT COUNT(*) FROM bible_verses")
-    suspend fun countVerses(): Int
+    @Query(
+        """
+        SELECT * FROM bible_verses 
+                WHERE languageCode = :languageCode
+                    AND bookId = :bookId
+                    AND chapter = :chapter
+        ORDER BY verse ASC
+        """
+    )
+    suspend fun getVersesForChapter(bookId: Int, chapter: Int, languageCode: String): List<BibleVerseEntity>
 
-    @Query("SELECT COUNT(*) FROM bible_verses WHERE languageCode = :languageCode")
-    suspend fun countVerses(languageCode: String): Int
+    @Query("SELECT * FROM bible_books WHERE LOWER(name) = LOWER(:name) LIMIT 1")
+    suspend fun getBookByName(name: String): BibleBookEntity?
+
+    @Query("SELECT * FROM bible_books WHERE LOWER(name) LIKE LOWER(:pattern) || '%' LIMIT 1")
+    suspend fun getBookByNamePrefix(pattern: String): BibleBookEntity?
+
+    @Query("SELECT * FROM bible_books WHERE LOWER(abbreviation) = LOWER(:abbr) LIMIT 1")
+    suspend fun getBookByAbbreviation(abbr: String): BibleBookEntity?
+    @Query("DELETE FROM bible_verses WHERE languageCode = :languageCode")
+    suspend fun deleteVersesByLanguage(languageCode: String)
 
     @Query("SELECT MAX(chapter) FROM bible_verses WHERE bookId = :bookId AND languageCode = :languageCode")
     suspend fun getChapterCount(bookId: Int, languageCode: String): Int?
 
     @Query("SELECT DISTINCT languageCode FROM bible_verses ORDER BY languageCode ASC")
     suspend fun getAvailableVerseLanguages(): List<String>
+
+    @Query("SELECT COUNT(*) FROM bible_verses WHERE languageCode = :languageCode")
+    suspend fun countVerses(languageCode: String): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertVerses(verses: List<BibleVerseEntity>)
 }

@@ -48,7 +48,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.verbum.core.common.model.LiturgicalSeason
 import com.verbum.core.ui.components.VerbumLoadingState
 import com.verbum.core.ui.theme.VerbumSpacing
-import com.verbum.core.ui.theme.VerbumScreenPreviews
+import androidx.compose.material3.Surface
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import com.verbum.core.ui.theme.VerbumPreviewVariant
+import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
 import com.verbum.core.ui.theme.VerbumTheme
 import com.verbum.feature.calendar.domain.model.CelebrationRank
 import com.verbum.feature.calendar.domain.model.LiturgicalColor
@@ -302,11 +305,13 @@ private fun LiturgicalColor.toComposeColor(): Color = when (this) {
 
 @Preview(showBackground = true)
 @Composable
-private fun LiturgicalCalendarPreview() {
+private fun LiturgicalCalendarPreview(
+    @PreviewParameter(VerbumPreviewVariantProvider::class) variant: VerbumPreviewVariant,
+) {
     val sampleDays = (1..30).map { dayOfMonth ->
         LiturgicalDay(
             date = LocalDate.of(2026, 4, dayOfMonth),
-            season = LiturgicalSeason.EASTER,
+            season = variant.season,
             celebration = if (dayOfMonth == 12) "Easter Sunday" else "Easter Weekday",
             rank = if (dayOfMonth == 12) CelebrationRank.SUNDAY else CelebrationRank.WEEKDAY,
             liturgicalColor = if (dayOfMonth == 12) LiturgicalColor.GOLD else LiturgicalColor.WHITE,
@@ -314,20 +319,20 @@ private fun LiturgicalCalendarPreview() {
         )
     }
 
-    VerbumScreenPreviews { season, darkTheme ->
-        VerbumTheme(liturgicalSeason = season, darkTheme = darkTheme) {
-            CalendarContent(
-                uiState = CalendarUiState.Success(
-                    currentMonth = YearMonth.of(2026, 4),
-                    days = sampleDays,
-                    selectedDay = sampleDays.first(),
-                    today = sampleDays[14],
-                ),
-                onNavigateBack = {},
-                onDaySelected = {},
-                onPreviousMonth = {},
-                onNextMonth = {},
-            )
+    VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+        CalendarContent(
+            uiState = CalendarUiState.Success(
+                currentMonth = YearMonth.of(2026, 4),
+                days = sampleDays,
+                selectedDay = sampleDays.first(),
+                today = sampleDays[14],
+            ),
+            onNavigateBack = {},
+            onDaySelected = {},
+            onPreviousMonth = {},
+            onNextMonth = {},
+        )
         }
     }
 }

@@ -1,0 +1,82 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Verbum — Dependabot Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+# Automatically opens PRs on the `dev` branch for:
+#   • Gradle dependency updates (weekly)
+#   • GitHub Actions pinned-version updates (weekly)
+#
+# All dependency PRs target `dev` — they go through the full PR validation
+# workflow before being merged toward sit → uat → main.
+# ─────────────────────────────────────────────────────────────────────────────
+version: 2
+
+updates:
+  # ── Gradle dependencies ─────────────────────────────────────────────────────
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Africa/Nairobi"
+    target-branch: "dev"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "BM-Ghost"
+    assignees:
+      - "BM-Ghost"
+    labels:
+      - "dependencies"
+      - "gradle"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    # Avoid large disruptive major version bumps
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      # Batch all AndroidX updates into a single PR
+      androidx:
+        patterns:
+          - "androidx.*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Batch Compose BOM + libraries together
+      compose:
+        patterns:
+          - "androidx.compose.*"
+          - "androidx.activity:activity-compose"
+        update-types:
+          - "minor"
+          - "patch"
+      # Batch all Hilt/Dagger updates together
+      hilt:
+        patterns:
+          - "com.google.dagger:hilt-*"
+          - "androidx.hilt:*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ── GitHub Actions ───────────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:30"
+      timezone: "Africa/Nairobi"
+    target-branch: "dev"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "BM-Ghost"
+    assignees:
+      - "BM-Ghost"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"

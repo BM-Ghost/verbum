@@ -22,7 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Comment
+import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -53,7 +53,10 @@ import com.verbum.core.ui.components.VerbumErrorState
 import com.verbum.core.ui.components.VerbumLoadingIndicator
 import com.verbum.core.ui.theme.CrimsonTextFamily
 import com.verbum.core.ui.theme.VerbumSpacing
-import com.verbum.core.ui.theme.VerbumScreenPreviews
+import androidx.compose.material3.Surface
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import com.verbum.core.ui.theme.VerbumPreviewVariant
+import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
 import com.verbum.core.ui.theme.VerbumTheme
 import com.verbum.feature.community.domain.model.CommunityPost
 import com.verbum.feature.community.domain.model.PostAuthor
@@ -281,7 +284,7 @@ private fun CommunityPostCard(
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Filled.Comment,
+                        imageVector = Icons.AutoMirrored.Filled.Comment,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp),
@@ -300,37 +303,39 @@ private fun CommunityPostCard(
 
 @Preview(showBackground = true)
 @Composable
-private fun CommunityFeedPreview() {
-    VerbumScreenPreviews { season, darkTheme ->
-        VerbumTheme(liturgicalSeason = season, darkTheme = darkTheme) {
+private fun CommunityFeedPreview(
+    @PreviewParameter(VerbumPreviewVariantProvider::class) variant: VerbumPreviewVariant,
+) {
+    VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             CommunityFeedContent(
-                uiState = CommunityUiState.Loaded(
-                    posts = listOf(
-                        CommunityPost(
-                            id = "1",
-                            author = PostAuthor("u1", "Maria Santos"),
-                            content = "Today's reading reminded me of God's infinite mercy. Let us always trust in His plan.",
-                            verseReference = "John 3:16",
-                            verseText = "For God so loved the world that he gave his only Son...",
-                            tags = listOf("Easter", "Gospel"),
-                            amenCount = 24,
-                            commentCount = 5,
-                            createdAt = System.currentTimeMillis(),
-                        ),
-                        CommunityPost(
-                            id = "2",
-                            author = PostAuthor("u2", "Fr. James"),
-                            content = "A beautiful reflection: The Eucharist is the source and summit of our faith.",
-                            tags = listOf("Eucharist", "reflection"),
-                            amenCount = 67,
-                            commentCount = 12,
-                            createdAt = System.currentTimeMillis(),
-                        ),
+            uiState = CommunityUiState.Loaded(
+                posts = listOf(
+                    CommunityPost(
+                        id = "1",
+                        author = PostAuthor("u1", "Maria Santos"),
+                        content = "Today's reading reminded me of God's infinite mercy. Let us always trust in His plan.",
+                        verseReference = "John 3:16",
+                        verseText = "For God so loved the world that he gave his only Son...",
+                        tags = listOf("Easter", "Gospel"),
+                        amenCount = 24,
+                        commentCount = 5,
+                        createdAt = System.currentTimeMillis(),
+                    ),
+                    CommunityPost(
+                        id = "2",
+                        author = PostAuthor("u2", "Fr. James"),
+                        content = "A beautiful reflection: The Eucharist is the source and summit of our faith.",
+                        tags = listOf("Eucharist", "reflection"),
+                        amenCount = 67,
+                        commentCount = 12,
+                        createdAt = System.currentTimeMillis(),
                     ),
                 ),
-                onCreatePost = {},
-                onProfileClick = {},
-                onAmenClick = {},
+            ),
+            onCreatePost = {},
+            onProfileClick = {},
+            onAmenClick = {},
             )
         }
     }

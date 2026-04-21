@@ -26,7 +26,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.verbum.core.ui.components.VerbumButton
 import com.verbum.core.ui.components.VerbumLoadingIndicator
 import com.verbum.core.ui.theme.VerbumSpacing
-import com.verbum.core.ui.theme.VerbumScreenPreviews
+import androidx.compose.material3.Surface
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import com.verbum.core.ui.theme.VerbumPreviewVariant
+import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
 import com.verbum.core.ui.theme.VerbumTheme
 
 @Composable
@@ -126,9 +129,11 @@ private fun AuthContent(
 
 @Preview(showBackground = true)
 @Composable
-private fun AuthScreenPreview() {
-    VerbumScreenPreviews { season, darkTheme ->
-        VerbumTheme(liturgicalSeason = season, darkTheme = darkTheme) {
+private fun AuthScreenPreview(
+    @PreviewParameter(VerbumPreviewVariantProvider::class) variant: VerbumPreviewVariant,
+) {
+    VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             AuthContent(uiState = AuthUiState.Idle, onSignIn = { _, _ -> })
         }
     }

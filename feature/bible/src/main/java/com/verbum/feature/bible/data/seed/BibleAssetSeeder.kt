@@ -16,11 +16,13 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 @Singleton
 class BibleAssetSeeder @Inject constructor(
     @ApplicationContext private val context: Context,
     private val bibleDao: BibleDao,
+    private val diagnosticsTracker: BibleDiagnosticsTracker,
     private val bootstrapPreferences: BootstrapPreferences,
     @Dispatcher(VerbumDispatcher.IO) private val ioDispatcher: CoroutineDispatcher,
 ) {
@@ -29,40 +31,158 @@ class BibleAssetSeeder @Inject constructor(
 
     suspend fun ensureSeeded() = withContext(ioDispatcher) {
         seedMutex.withLock {
-            val books = loadBookMetadata()
-            if (bibleDao.countBooks() == 0) {
-                bibleDao.insertBooks(books.map { it.toEntity(totalChapters = 0) })
+            diagnosticsTracker.markSeedingStarted()
+            try {
+                val books = loadBookMetadata()
+                if (bibleDao.countBooks() == 0) {
+                    bibleDao.insertBooks(books.map { it.toEntity(totalChapters = 0) })
+                }
+
+                // PHASE 1: Insert verses (critical - must complete)
+                try {
+                    seedLatinVulsearchIfNeeded(books)
+                } catch (error: Throwable) {
+                    Timber.e(error, "Latin verse seeding failed")
+                }
+
+                try {
+                    seedEnglishPg1581IfNeeded(books)
+                } catch (error: Throwable) {
+                    Timber.e(error, "English verse seeding failed")
+                }
+
+                // Force a count to ensure verses were actually inserted
+                val latinVerseCount = bibleDao.countVerses(LATIN_LANGUAGE_CODE)
+                val englishVerseCount = bibleDao.countVerses(ENGLISH_LANGUAGE_CODE)
+                Timber.i("Verse count check: latin=%d english=%d", latinVerseCount, englishVerseCount)
+
+                // Only proceed with metadata updates if we have verses
+                if (latinVerseCount < 100 && englishVerseCount < 100) {
+                    Timber.w(
+                        "Bible seed produced insufficient verses (latin=%d, english=%d). Will retry on next launch.",
+                        latinVerseCount,
+                        englishVerseCount,
+                    )
+                    diagnosticsTracker.markSeedingFailed(
+                        IllegalStateException(
+                            "Insufficient verses after seeding (latin=$latinVerseCount, english=$englishVerseCount)"
+                        )
+                    )
+                    return@withLock
+                }
+
+                Timber.i("Bible seed validated: latin=%d english=%d", latinVerseCount, englishVerseCount)
+
+                // PHASE 2: Update metadata (non-critical)
+                try {
+                    val availableLanguages = bibleDao.getAvailableVerseLanguages()
+                    if (availableLanguages.isEmpty()) {
+                        Timber.e("No verse languages found after seeding")
+                        return@withLock
+                    }
+
+                    val updatedBooks = books.map { meta ->
+                        val totalChapters = availableLanguages
+                            .mapNotNull { language -> bibleDao.getChapterCount(meta.id, language) }
+                            .maxOrNull()
+                            ?: 1
+                        meta.toEntity(totalChapters = totalChapters)
+                    }
+
+                    bibleDao.updateBooks(updatedBooks)
+                    bootstrapPreferences.markBiblePreloaded()
+                    initializePreferredLanguage(availableLanguages)
+
+                    val snapshot = buildDiagnosticsSnapshot(
+                        books = books,
+                        availableLanguages = availableLanguages,
+                        updatedBooks = updatedBooks,
+                    )
+                    diagnosticsTracker.markSeedingSucceeded(snapshot)
+                } catch (metadataError: Throwable) {
+                    Timber.e(metadataError, "Bible metadata update failed, but verses are seeded")
+                    // Still mark as succeeded since verses are the critical part
+                    val availableLanguages = bibleDao.getAvailableVerseLanguages()
+                    val snapshot = buildDiagnosticsSnapshot(
+                        books = books,
+                        availableLanguages = availableLanguages,
+                        updatedBooks = books.map { it.toEntity(totalChapters = 0) },
+                    )
+                    diagnosticsTracker.markSeedingSucceeded(snapshot)
+                }
+            } catch (error: Throwable) {
+                diagnosticsTracker.markSeedingFailed(error)
+                Timber.e(error, "Bible seeding failed; continuing without crash")
             }
-
-            seedLatinVulsearchIfNeeded(books)
-            seedEnglishPg1581IfNeeded(books)
-
-            val availableLanguages = bibleDao.getAvailableVerseLanguages()
-            if (availableLanguages.isEmpty()) {
-                return@withLock
-            }
-
-            val updatedBooks = books.map { meta ->
-                val totalChapters = availableLanguages
-                    .mapNotNull { language -> bibleDao.getChapterCount(meta.id, language) }
-                    .maxOrNull()
-                    ?: 1
-                meta.toEntity(totalChapters = totalChapters)
-            }
-
-            bibleDao.insertBooks(updatedBooks)
-            bootstrapPreferences.markBiblePreloaded()
-            initializePreferredLanguage(availableLanguages)
         }
     }
 
-    private suspend fun seedLatinVulsearchIfNeeded(books: List<BookMeta>) {
-        if (bibleDao.countVerses(LATIN_LANGUAGE_CODE) > 0) return
+    private suspend fun buildDiagnosticsSnapshot(
+        books: List<BookMeta>,
+        availableLanguages: List<String>,
+        updatedBooks: List<BibleBookEntity>,
+    ): BibleDiagnosticsSnapshot {
+        val languageVerseCounts = linkedMapOf<String, Int>()
+        val missingBooksByLanguage = linkedMapOf<String, List<String>>()
+        val partialBooksByLanguage = linkedMapOf<String, List<String>>()
+        val missingChapterCountByLanguage = linkedMapOf<String, Int>()
+        val expectedByBookId = updatedBooks.associateBy { it.id }
 
+        for (language in availableLanguages) {
+            languageVerseCounts[language] = bibleDao.countVerses(language)
+
+            val missingBooks = mutableListOf<String>()
+            val partialBooks = mutableListOf<String>()
+            var missingChapters = 0
+
+            for (book in books) {
+                val expectedTotal = expectedByBookId[book.id]?.totalChapters ?: 1
+                val chapterCount = bibleDao.getChapterCount(book.id, language) ?: 0
+                when {
+                    chapterCount <= 0 -> missingBooks += book.abbreviation
+                    chapterCount < expectedTotal -> {
+                        val deficit = expectedTotal - chapterCount
+                        partialBooks += "${book.abbreviation}(-$deficit)"
+                        missingChapters += deficit
+                    }
+                }
+            }
+
+            missingBooksByLanguage[language] = missingBooks
+            partialBooksByLanguage[language] = partialBooks
+            missingChapterCountByLanguage[language] = missingChapters
+        }
+
+        return BibleDiagnosticsSnapshot(
+            generatedAtMs = System.currentTimeMillis(),
+            totalBooks = books.size,
+            languageVerseCounts = languageVerseCounts,
+            missingBooksByLanguage = missingBooksByLanguage,
+            partialBooksByLanguage = partialBooksByLanguage,
+            missingChapterCountByLanguage = missingChapterCountByLanguage,
+        )
+    }
+
+    private suspend fun seedLatinVulsearchIfNeeded(books: List<BookMeta>) {
+        val existing = bibleDao.countVerses(LATIN_LANGUAGE_CODE)
+        if (existing >= MIN_REQUIRED_VERSE_COUNT) {
+            Timber.i("Latin verses already seeded (%d verses)", existing)
+            return
+        }
+        if (existing > 0) {
+            Timber.w("Latin seed incomplete (%d). Clearing and reseeding.", existing)
+            bibleDao.deleteVersesByLanguage(LATIN_LANGUAGE_CODE)
+        }
+
+        Timber.i("Starting Latin Vulgate seeding...")
         val bibleDir = "bible/source/vulsearch_vulgate"
         val fileNames = context.assets.list(bibleDir).orEmpty().sorted()
-        if (fileNames.isEmpty()) return
+        if (fileNames.isEmpty()) {
+            Timber.e("No Latin source files found")
+            return
+        }
 
+        var totalInserted = 0
         for (fileName in fileNames) {
             if (!fileName.endsWith(".yaml", ignoreCase = true)) continue
 
@@ -72,7 +192,7 @@ class BibleAssetSeeder @Inject constructor(
 
             context.assets.open(assetPath).bufferedReader().use { reader ->
                 var currentChapter = 0
-                val batch = ArrayList<BibleVerseEntity>(1024)
+                val batch = ArrayList<BibleVerseEntity>(LARGE_INSERT_BATCH_SIZE)
 
                 while (true) {
                     val line = reader.readLine() ?: break
@@ -100,36 +220,55 @@ class BibleAssetSeeder @Inject constructor(
                         )
                     )
 
-                    if (batch.size >= INSERT_BATCH_SIZE) {
+                    if (batch.size >= LARGE_INSERT_BATCH_SIZE) {
                         bibleDao.insertVerses(batch.toList())
+                        totalInserted += batch.size
+                        Timber.d("Latin insert batch: %d verses (total: %d)", batch.size, totalInserted)
                         batch.clear()
                     }
                 }
 
                 if (batch.isNotEmpty()) {
                     bibleDao.insertVerses(batch)
+                    totalInserted += batch.size
+                    Timber.d("Latin final batch: %d verses (total: %d)", batch.size, totalInserted)
                 }
             }
         }
+
+        val verifyCount = bibleDao.countVerses(LATIN_LANGUAGE_CODE)
+        Timber.i("Latin seeding complete. Total inserted: %d, verified in DB: %d", totalInserted, verifyCount)
     }
 
     private suspend fun seedEnglishPg1581IfNeeded(books: List<BookMeta>) {
-        if (bibleDao.countVerses(ENGLISH_LANGUAGE_CODE) > 0) return
+        val existing = bibleDao.countVerses(ENGLISH_LANGUAGE_CODE)
+        if (existing >= MIN_REQUIRED_VERSE_COUNT) {
+            Timber.i("English verses already seeded (%d verses)", existing)
+            return
+        }
+        if (existing > 0) {
+            Timber.w("English seed incomplete (%d). Clearing and reseeding.", existing)
+            bibleDao.deleteVersesByLanguage(ENGLISH_LANGUAGE_CODE)
+        }
 
+        Timber.i("Starting English pg1581 seeding...")
         val sourcePath = "bible/source/pg1581/pg1581-images.html.utf8"
         val mappingPath = "bible/source/pg1581/src_pg1581.yaml"
         val sourceExists = runCatching { context.assets.open(sourcePath).close(); true }.getOrElse { false }
         val mappingExists = runCatching { context.assets.open(mappingPath).close(); true }.getOrElse { false }
-        if (!sourceExists || !mappingExists) return
+        if (!sourceExists || !mappingExists) {
+            Timber.e("English source files not found (sourceExists=$sourceExists, mappingExists=$mappingExists)")
+            return
+        }
 
         val tagToUsfm = loadPg1581BookMap(mappingPath)
         val bookIdByAbbreviation = books.associate { it.abbreviation to it.id }
 
         var currentBookId: Int? = null
-        val batch = ArrayList<BibleVerseEntity>(INSERT_BATCH_SIZE)
-        // Paragraph accumulation: pg1581 HTML wraps verse <p> content across multiple lines.
+        val batch = ArrayList<BibleVerseEntity>(LARGE_INSERT_BATCH_SIZE)
         val paraBuffer = StringBuilder()
         var inVersePara = false
+        var totalInserted = 0
 
         context.assets.open(sourcePath).bufferedReader().use { reader ->
             while (true) {
@@ -137,7 +276,12 @@ class BibleAssetSeeder @Inject constructor(
                 val line = rawLine.trim()
                 if (line.isBlank()) continue
 
-                // Start of a verse paragraph — detected before accumulation
+                val bookMatch = BOOK_HEADER_REGEX.find(line)
+                if (bookMatch != null) {
+                    val tag = bookMatch.groupValues[1].uppercase()
+                    currentBookId = tagToUsfm[tag]?.let { bookIdByAbbreviation[it] }
+                }
+
                 if (!inVersePara && VERSE_PARA_START_REGEX.containsMatchIn(line)) {
                     inVersePara = true
                     paraBuffer.clear()
@@ -147,7 +291,6 @@ class BibleAssetSeeder @Inject constructor(
                     if (paraBuffer.isNotEmpty()) paraBuffer.append(' ')
                     paraBuffer.append(line)
 
-                    // Only process once the closing </p> tag is present
                     if (line.contains("</p>", ignoreCase = true)) {
                         val fullPara = paraBuffer.toString()
                         val verseMatch = HTML_VERSE_REGEX.find(fullPara)
@@ -167,8 +310,10 @@ class BibleAssetSeeder @Inject constructor(
                                             text = verseText,
                                         )
                                     )
-                                    if (batch.size >= INSERT_BATCH_SIZE) {
+                                    if (batch.size >= LARGE_INSERT_BATCH_SIZE) {
                                         bibleDao.insertVerses(batch.toList())
+                                        totalInserted += batch.size
+                                        Timber.d("English insert batch: %d verses (total: %d)", batch.size, totalInserted)
                                         batch.clear()
                                     }
                                 }
@@ -177,22 +322,19 @@ class BibleAssetSeeder @Inject constructor(
                         inVersePara = false
                         paraBuffer.clear()
                     }
-                    // Still accumulating — skip header detection for this line
                     continue
-                }
-
-                // Book header (only checked when not accumulating a verse paragraph)
-                val bookMatch = BOOK_HEADER_REGEX.find(line)
-                if (bookMatch != null) {
-                    val tag = bookMatch.groupValues[1].uppercase()
-                    currentBookId = tagToUsfm[tag]?.let { bookIdByAbbreviation[it] }
                 }
             }
         }
 
         if (batch.isNotEmpty()) {
             bibleDao.insertVerses(batch)
+            totalInserted += batch.size
+            Timber.d("English final batch: %d verses (total: %d)", batch.size, totalInserted)
         }
+
+        val verifyCount = bibleDao.countVerses(ENGLISH_LANGUAGE_CODE)
+        Timber.i("English seeding complete. Total inserted: %d, verified in DB: %d", totalInserted, verifyCount)
     }
 
     private suspend fun initializePreferredLanguage(availableLanguages: List<String>) {
@@ -331,16 +473,18 @@ class BibleAssetSeeder @Inject constructor(
 
     private companion object {
         const val INSERT_BATCH_SIZE = 1000
+        const val LARGE_INSERT_BATCH_SIZE = 5000  // Faster batch insertion to avoid Job cancellation
+        const val MIN_REQUIRED_VERSE_COUNT = 30000
         const val ENGLISH_LANGUAGE_CODE = "en"
         const val LATIN_LANGUAGE_CODE = "la"
 
         val CHAPTER_REGEX = Regex("^\\s*c:(\\d+):")
         val VERSE_REGEX = Regex("^\\s*v:(\\d+):\\s*(.+)$")
-        val VS_MARKUP_REGEX = Regex("\\{VS:[^}]+}")
-        val BOOK_HEADER_REGEX = Regex("<h3 class=\"nobreak\" id=\"([A-Z0-9_]+)\">", RegexOption.IGNORE_CASE)
+        val VS_MARKUP_REGEX = Regex("\\{VS:[^}]+\\}")
+        val BOOK_HEADER_REGEX = Regex("<h3[^>]*id=\"([A-Z0-9_]+)\"[^>]*>", RegexOption.IGNORE_CASE)
         val CHAPTER_HEADER_REGEX = Regex("<h4>([^<]+)</h\\d>", RegexOption.IGNORE_CASE)
-        val VERSE_PARA_START_REGEX = Regex("<p>\\d+:\\d+\\.", RegexOption.IGNORE_CASE)
-        val HTML_VERSE_REGEX = Regex("<p>(\\d+):(\\d+)\\.\\s*(.+?)</p>", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
+        val VERSE_PARA_START_REGEX = Regex("<p[^>]*>\\s*\\d+:\\d+\\.", RegexOption.IGNORE_CASE)
+        val HTML_VERSE_REGEX = Regex("<p[^>]*>\\s*(\\d+):(\\d+)\\.\\s*(.+?)</p>", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
         val SUPERSCRIPT_REGEX = Regex("<sup[^>]*>.*?</sup>", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
         val CHAPTER_DECIMAL_REGEX = Regex("Chapter\\s+(\\d+)", RegexOption.IGNORE_CASE)
         val CHAPTER_ROMAN_REGEX = Regex("CHAP\\.\\s*([IVXLCDM]+)\\.", RegexOption.IGNORE_CASE)

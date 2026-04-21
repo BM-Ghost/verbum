@@ -25,7 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.verbum.core.ui.components.VerbumButton
 import com.verbum.core.ui.theme.VerbumSpacing
-import com.verbum.core.ui.theme.VerbumScreenPreviews
+import androidx.compose.material3.Surface
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import com.verbum.core.ui.theme.VerbumPreviewVariant
+import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
 import com.verbum.core.ui.theme.VerbumTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,9 +109,11 @@ fun CreatePostScreen(
 
 @Preview(showBackground = true)
 @Composable
-private fun CreatePostPreview() {
-    VerbumScreenPreviews { season, darkTheme ->
-        VerbumTheme(liturgicalSeason = season, darkTheme = darkTheme) {
+private fun CreatePostPreview(
+    @PreviewParameter(VerbumPreviewVariantProvider::class) variant: VerbumPreviewVariant,
+) {
+    VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             CreatePostScreen(onNavigateBack = {})
         }
     }

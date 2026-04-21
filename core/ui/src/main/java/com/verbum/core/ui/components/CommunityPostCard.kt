@@ -23,9 +23,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Surface
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import com.verbum.core.ui.theme.VerbumPreviewVariant
+import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
+import com.verbum.core.ui.theme.VerbumTheme
 import com.verbum.core.ui.theme.VerbumShapes
 import com.verbum.core.ui.theme.VerbumSpacing
-import com.verbum.core.ui.theme.VerbumTheme
 
 @Composable
 fun CommunityPostCard(
@@ -156,9 +160,12 @@ fun CommunityPostCard(
 
 @Preview(showBackground = true)
 @Composable
-private fun CommunityPostCardPreview() {
-    VerbumTheme {
-        CommunityPostCard(
+private fun CommunityPostCardPreview(
+    @PreviewParameter(VerbumPreviewVariantProvider::class) variant: VerbumPreviewVariant,
+) {
+    VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            CommunityPostCard(
             authorName = "Fr. Michael",
             timeAgo = "2 hours ago",
             verseReference = "Matthew 5:14",
@@ -168,7 +175,8 @@ private fun CommunityPostCardPreview() {
             onAmenClick = {},
             onCommentClick = {},
             onShareClick = {},
-            modifier = Modifier.padding(16.dp),
-        )
+                modifier = Modifier.padding(16.dp),
+            )
+        }
     }
 }

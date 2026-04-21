@@ -13,3 +13,9 @@ local.properties
 *.aab
 *.ap_
 *.dex
+
+# Local developer files — never commit
+.env.local
+.env.local.*
+LOCAL_PUSH_WORKFLOW.md
+build_output_app.txt

@@ -55,7 +55,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.verbum.core.ui.components.AiChatBubble
 import com.verbum.core.ui.theme.VerbumSpacing
-import com.verbum.core.ui.theme.VerbumScreenPreviews
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import com.verbum.core.ui.theme.VerbumPreviewVariant
+import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
 import com.verbum.core.ui.theme.VerbumTheme
 import com.verbum.feature.ai.domain.model.AiMessage
 import com.verbum.feature.ai.domain.model.AiRole
@@ -270,27 +272,29 @@ private fun AiChatContent(
 
 @Preview(showBackground = true)
 @Composable
-private fun AiChatPreview() {
-    VerbumScreenPreviews { season, darkTheme ->
-        VerbumTheme(liturgicalSeason = season, darkTheme = darkTheme) {
+private fun AiChatPreview(
+    @PreviewParameter(VerbumPreviewVariantProvider::class) variant: VerbumPreviewVariant,
+) {
+    VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             AiChatContent(
-                uiState = AiChatUiState.Active(
-                    messages = listOf(
-                        AiMessage("1", "Peace be with you. How may I assist you?", AiRole.ASSISTANT),
-                        AiMessage("2", "What does John 1:1 mean?", AiRole.USER),
-                        AiMessage(
-                            "3",
-                            "\"In the beginning was the Word\" (John 1:1) speaks to the eternal nature of Christ. " +
-                                "The Greek word 'Logos' reveals that Jesus is God's ultimate self-expression — " +
-                                "present before creation, inseparable from the Father. This is a cornerstone of " +
-                                "Catholic Christology, affirmed at the Council of Nicaea (325 AD).",
-                            AiRole.ASSISTANT,
-                            relatedVerses = listOf("Genesis 1:1", "Colossians 1:15-17"),
-                        ),
+            uiState = AiChatUiState.Active(
+                messages = listOf(
+                    AiMessage("1", "Peace be with you. How may I assist you?", AiRole.ASSISTANT),
+                    AiMessage("2", "What does John 1:1 mean?", AiRole.USER),
+                    AiMessage(
+                        "3",
+                        "\"In the beginning was the Word\" (John 1:1) speaks to the eternal nature of Christ. " +
+                            "The Greek word 'Logos' reveals that Jesus is God's ultimate self-expression — " +
+                            "present before creation, inseparable from the Father. This is a cornerstone of " +
+                            "Catholic Christology, affirmed at the Council of Nicaea (325 AD).",
+                        AiRole.ASSISTANT,
+                        relatedVerses = listOf("Genesis 1:1", "Colossians 1:15-17"),
                     ),
                 ),
-                onSendMessage = {},
-                onNavigateBack = {},
+            ),
+            onSendMessage = {},
+            onNavigateBack = {},
             )
         }
     }

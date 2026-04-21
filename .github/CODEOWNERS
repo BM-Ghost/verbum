@@ -1,0 +1,43 @@
+# CODEOWNERS — Verbum Project
+# ─────────────────────────────────────────────────────────────────────────────
+# All matches use gitignore-style glob syntax (last matching rule wins).
+# @BM-Ghost is the sole owner of all protected configuration.
+#
+# To take effect, ensure branch protection rules require CODEOWNERS review.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Global fallback ───────────────────────────────────────────────────────────
+# Every file requires owner review unless overridden below.
+*                                            @BM-Ghost
+
+# ── DevOps & CI/CD (never modify without owner) ───────────────────────────────
+.github/                                     @BM-Ghost
+.github/workflows/                           @BM-Ghost
+.github/CODEOWNERS                           @BM-Ghost
+.github/SECURITY.md                          @BM-Ghost
+.github/dependabot.yml                       @BM-Ghost
+
+# ── Build & Dependency configuration ─────────────────────────────────────────
+build.gradle.kts                             @BM-Ghost
+settings.gradle.kts                          @BM-Ghost
+gradle.properties                            @BM-Ghost
+gradle/libs.versions.toml                    @BM-Ghost
+gradle/wrapper/gradle-wrapper.properties     @BM-Ghost
+
+# ── App-level build & manifest ────────────────────────────────────────────────
+app/build.gradle.kts                         @BM-Ghost
+app/proguard-rules.pro                       @BM-Ghost
+app/src/main/AndroidManifest.xml             @BM-Ghost
+
+# ── Core infrastructure modules ───────────────────────────────────────────────
+# These define app-wide contracts (DI, DB schema, networking, theming).
+# Any breaking change here affects the entire app.
+core/                                        @BM-Ghost
+core/common/                                 @BM-Ghost
+core/database/                               @BM-Ghost
+core/network/                                @BM-Ghost
+core/ui/                                     @BM-Ghost
+
+# ── Feature module build files ────────────────────────────────────────────────
+# Feature logic is open to contributors but build config stays owner-controlled.
+feature/*/build.gradle.kts                   @BM-Ghost

@@ -23,15 +23,18 @@ class PrayerAssetSeeder @Inject constructor(
     @Dispatcher(VerbumDispatcher.IO) private val ioDispatcher: CoroutineDispatcher,
 ) {
 
+    private companion object {
+        // Increment this when bundled prayer content changes.
+        const val CURRENT_PRAYERS_ASSET_VERSION = 2
+    }
+
     private val seedMutex = Mutex()
 
     suspend fun ensureSeeded() = withContext(ioDispatcher) {
         seedMutex.withLock {
-            if (bootstrapPreferences.isPrayersPreloaded() && prayerDao.countPrayers() > 0) {
-                return@withLock
-            }
-            if (prayerDao.countPrayers() > 0) {
-                bootstrapPreferences.markPrayersPreloaded()
+            val prayerCount = prayerDao.countPrayers()
+            val storedAssetVersion = bootstrapPreferences.getPrayersAssetVersion()
+            if (storedAssetVersion >= CURRENT_PRAYERS_ASSET_VERSION && prayerCount > 0) {
                 return@withLock
             }
 
@@ -54,8 +57,10 @@ class PrayerAssetSeeder @Inject constructor(
                 )
             }
 
+            prayerDao.deletePrayersNotIn(entities.map { it.id })
             prayerDao.insertPrayers(entities)
             bootstrapPreferences.markPrayersPreloaded()
+            bootstrapPreferences.setPrayersAssetVersion(CURRENT_PRAYERS_ASSET_VERSION)
         }
     }
 }

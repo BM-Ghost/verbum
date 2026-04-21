@@ -23,11 +23,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -56,9 +58,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.verbum.core.ui.components.VerbumErrorState
 import com.verbum.core.ui.components.VerbumLoadingIndicator
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import com.verbum.core.ui.theme.CrimsonTextFamily
+import com.verbum.core.ui.theme.VerbumPreviewVariant
+import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
 import com.verbum.core.ui.theme.VerbumSpacing
-import com.verbum.core.ui.theme.VerbumScreenPreviews
 import com.verbum.core.ui.theme.VerbumTheme
 import com.verbum.feature.bible.domain.model.BibleBook
 import com.verbum.feature.bible.domain.model.Testament
@@ -66,6 +70,8 @@ import com.verbum.feature.bible.domain.model.Testament
 @Composable
 fun BibleScreen(
     onBookChapterSelected: (bookId: Int, chapter: Int) -> Unit,
+    onOpenDiagnostics: (() -> Unit)? = null,
+    showDiagnosticsButton: Boolean = false,
     modifier: Modifier = Modifier,
     viewModel: BibleViewModel = hiltViewModel(),
 ) {
@@ -75,6 +81,8 @@ fun BibleScreen(
         uiState = uiState,
         onSearchQueryChanged = viewModel::onSearchQueryChanged,
         onBookChapterSelected = onBookChapterSelected,
+        onOpenDiagnostics = onOpenDiagnostics,
+        showDiagnosticsButton = showDiagnosticsButton,
         modifier = modifier,
     )
 }
@@ -85,6 +93,8 @@ private fun BibleContent(
     uiState: BibleUiState,
     onSearchQueryChanged: (String) -> Unit,
     onBookChapterSelected: (bookId: Int, chapter: Int) -> Unit,
+    onOpenDiagnostics: (() -> Unit)? = null,
+    showDiagnosticsButton: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -102,6 +112,17 @@ private fun BibleContent(
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+            },
+            actions = {
+                if (showDiagnosticsButton && onOpenDiagnostics != null) {
+                    IconButton(onClick = onOpenDiagnostics) {
+                        Icon(
+                            imageVector = Icons.Outlined.BugReport,
+                            contentDescription = "Bible diagnostics",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -147,7 +168,7 @@ private fun BibleContent(
                 )
 
                 AnimatedVisibility(
-                    visible = uiState.searchQuery.length >= 3,
+                    visible = uiState.searchQuery.length >= 2,
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
@@ -172,7 +193,7 @@ private fun BibleContent(
                 }
 
                 AnimatedVisibility(
-                    visible = uiState.searchQuery.length < 3,
+                    visible = uiState.searchQuery.length < 2,
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
@@ -329,9 +350,11 @@ private fun SearchResultItem(
 
 @Preview(showBackground = true)
 @Composable
-private fun BibleScreenPreview() {
-    VerbumScreenPreviews { season, darkTheme ->
-        VerbumTheme(liturgicalSeason = season, darkTheme = darkTheme) {
+private fun BibleScreenPreview(
+    @PreviewParameter(VerbumPreviewVariantProvider::class) variant: VerbumPreviewVariant,
+) {
+    VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             BibleContent(
                 uiState = BibleUiState.BooksLoaded(
                     oldTestament = listOf(
@@ -345,6 +368,8 @@ private fun BibleScreenPreview() {
                 ),
                 onSearchQueryChanged = {},
                 onBookChapterSelected = { _, _ -> },
+                onOpenDiagnostics = {},
+                showDiagnosticsButton = true,
             )
         }
     }

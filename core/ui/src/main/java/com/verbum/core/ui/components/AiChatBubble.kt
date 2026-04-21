@@ -23,8 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.verbum.core.ui.theme.VerbumSpacing
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import com.verbum.core.ui.theme.VerbumPreviewVariant
+import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
 import com.verbum.core.ui.theme.VerbumTheme
+import com.verbum.core.ui.theme.VerbumSpacing
 
 @Composable
 fun AiChatBubble(
@@ -86,9 +89,12 @@ fun AiChatBubble(
 
 @Preview(showBackground = true)
 @Composable
-private fun AiChatBubblePreview() {
-    VerbumTheme {
-        Column {
+private fun AiChatBubblePreview(
+    @PreviewParameter(VerbumPreviewVariantProvider::class) variant: VerbumPreviewVariant,
+) {
+    VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Column {
             AiChatBubble(
                 message = "What does John 1:1 mean?",
                 isFromUser = true,
@@ -97,6 +103,7 @@ private fun AiChatBubblePreview() {
                 message = "\"In the beginning was the Word\" (John 1:1) speaks to the eternal nature of Christ. The Greek word 'Logos' reveals that Jesus is God's ultimate self-expression — present before creation, inseparable from the Father. This is a cornerstone of Catholic Christology.",
                 isFromUser = false,
             )
+            }
         }
     }
 }

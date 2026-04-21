@@ -1,0 +1,90 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Verbum · CI — Dev Branch
+# ─────────────────────────────────────────────────────────────────────────────
+# Triggers: every push/merge into dev.
+# Validates quality, runs all unit tests, and produces a debug APK artifact
+# that developers can install directly.
+# ─────────────────────────────────────────────────────────────────────────────
+name: "CI — Dev"
+
+on:
+  push:
+    branches: [dev]
+
+concurrency:
+  group: "ci-dev-${{ github.ref }}"
+  cancel-in-progress: false   # Never cancel an in-flight dev build mid-merge
+
+permissions:
+  contents: read
+  checks: write
+
+env:
+  JAVA_VERSION: "17"
+  JAVA_DISTRIBUTION: "temurin"
+  GRADLE_OPTS: "-Xmx4g -Xms512m -Dfile.encoding=UTF-8"
+
+jobs:
+  validate-build-archive:
+    name: "Validate · Build · Archive"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: gradle
+
+      - name: Setup Gradle (cache write enabled)
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: false
+          add-job-summary: always
+
+      # ── Quality gates ──────────────────────────────────────────────────────
+      - name: Engineering Guidelines
+        run: ./gradlew verifyVerbumGuidelines --no-daemon
+
+      - name: Android Lint
+        run: ./gradlew lintDebug --no-daemon
+
+      - name: Unit Tests (all modules)
+        run: ./gradlew testDebugUnitTest --no-daemon --continue
+
+      # ── Build ──────────────────────────────────────────────────────────────
+      - name: Assemble Debug APK
+        run: ./gradlew :app:assembleDebug --no-daemon
+
+      # ── Archive ───────────────────────────────────────────────────────────
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: "verbum-dev-build-${{ github.run_number }}"
+          path: "app/build/outputs/apk/debug/app-debug.apk"
+          retention-days: 14
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "test-results-dev-${{ github.run_number }}"
+          path: |
+            **/build/test-results/**/*.xml
+            **/build/reports/tests/**
+          retention-days: 7
+
+      - name: Upload Lint Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "lint-dev-${{ github.run_number }}"
+          path: "**/build/reports/lint-results-debug.html"
+          retention-days: 7

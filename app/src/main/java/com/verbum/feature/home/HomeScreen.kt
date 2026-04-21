@@ -75,8 +75,11 @@ import com.verbum.core.common.model.LiturgicalSeason
 import com.verbum.core.ui.theme.CrimsonTextFamily
 import com.verbum.core.ui.theme.LocalLiturgicalSeason
 import com.verbum.core.ui.theme.VerbumSpacing
-import com.verbum.core.ui.theme.VerbumScreenPreviews
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import com.verbum.core.ui.theme.VerbumPreviewVariant
+import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
 import com.verbum.core.ui.theme.VerbumTheme
+import com.verbum.feature.bible.domain.ContinueReadingState
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,7 +92,9 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit,
     onNavigateToCommunity: () -> Unit,
     onNavigateToCalendar: () -> Unit,
+    onNavigateToReader: (bookId: Int, chapter: Int) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
+    continueReadingState: ContinueReadingState? = null,
 ) {
     val season = LocalLiturgicalSeason.current
     val primaryColor by animateColorAsState(
@@ -169,7 +174,7 @@ fun HomeScreen(
                 Spacer(Modifier.height(VerbumSpacing.lg))
 
                 // ── Quick Actions Grid ──
-                SectionHeader(title = "Explore")
+                SectionHeader(title = "Quick Actions")
                 Spacer(Modifier.height(VerbumSpacing.sm))
                 QuickActionsRow(
                     onNavigateToBible = onNavigateToBible,
@@ -203,9 +208,17 @@ fun HomeScreen(
                 Spacer(Modifier.height(VerbumSpacing.xl))
 
                 // ── Continue Reading ──
-                SectionHeader(title = "Continue Reading")
-                Spacer(Modifier.height(VerbumSpacing.sm))
-                ContinueReadingCard(onClick = onNavigateToBible)
+                val readingState = continueReadingState
+                if (readingState != null) {
+                    SectionHeader(title = "Continue Reading")
+                    Spacer(Modifier.height(VerbumSpacing.sm))
+                    ContinueReadingCard(
+                        bookName = readingState.bookName,
+                        chapter = readingState.chapter,
+                        lastVerse = readingState.lastVerse,
+                        onClick = { onNavigateToReader(readingState.bookId, readingState.chapter) },
+                    )
+                }
 
                 Spacer(Modifier.height(VerbumSpacing.xxl + VerbumSpacing.lg))
             }
@@ -480,7 +493,12 @@ private fun DailyPrayerCard(
 }
 
 @Composable
-private fun ContinueReadingCard(onClick: () -> Unit) {
+private fun ContinueReadingCard(
+    bookName: String,
+    chapter: Int,
+    lastVerse: Int,
+    onClick: () -> Unit,
+) {
     Card(
         onClick = onClick,
         modifier = Modifier
@@ -504,12 +522,12 @@ private fun ContinueReadingCard(onClick: () -> Unit) {
             Spacer(Modifier.width(VerbumSpacing.md))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "John 1",
+                    text = "$bookName $chapter",
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = "Continue from verse 14",
+                    text = "Continue from verse $lastVerse",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -562,9 +580,11 @@ private fun seasonPrayer(season: LiturgicalSeason): String = when (season) {
 
 @Preview(showBackground = true)
 @Composable
-private fun HomeScreenPreview() {
-    VerbumScreenPreviews { season, darkTheme ->
-        VerbumTheme(liturgicalSeason = season, darkTheme = darkTheme) {
+private fun HomeScreenPreview(
+    @PreviewParameter(VerbumPreviewVariantProvider::class) variant: VerbumPreviewVariant,
+) {
+    VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             HomeScreen(
                 onNavigateToBible = {},
                 onNavigateToMissal = {},

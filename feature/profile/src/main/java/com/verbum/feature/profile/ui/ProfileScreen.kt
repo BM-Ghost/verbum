@@ -19,7 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.LocalFireDepartment
-import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -42,10 +42,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.verbum.core.ui.theme.VerbumScreenPreviews
+import androidx.compose.material3.Surface
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import com.verbum.core.ui.theme.VerbumPreviewVariant
+import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
+import com.verbum.core.ui.theme.VerbumTheme
 import com.verbum.core.ui.components.VerbumLoadingState
 import com.verbum.core.ui.theme.VerbumSpacing
-import com.verbum.core.ui.theme.VerbumTheme
 import com.verbum.feature.profile.domain.model.ProfileStats
 import com.verbum.feature.profile.domain.model.UserProfile
 
@@ -214,7 +217,7 @@ private fun ProfileSuccessContent(
                 modifier = Modifier.weight(1f),
             )
             StatCard(
-                icon = Icons.Outlined.MenuBook,
+                icon = Icons.AutoMirrored.Outlined.MenuBook,
                 value = "${stats.totalReadings}",
                 label = "Readings",
                 modifier = Modifier.weight(1f),
@@ -321,31 +324,33 @@ private fun StatCard(
 
 @Preview(showBackground = true)
 @Composable
-private fun ProfileScreenPreview() {
-    VerbumScreenPreviews { season, darkTheme ->
-        VerbumTheme(liturgicalSeason = season, darkTheme = darkTheme) {
+private fun ProfileScreenPreview(
+    @PreviewParameter(VerbumPreviewVariantProvider::class) variant: VerbumPreviewVariant,
+) {
+    VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             ProfileContent(
-                uiState = ProfileUiState.Success(
-                    profile = UserProfile(
-                        id = "u-1",
-                        displayName = "Maria Santos",
-                        email = "maria@verbum.app",
-                        bio = "Seeking Christ in Scripture, liturgy, and daily prayer.",
-                        parish = "St. Joseph Parish",
-                        favoriteVerse = "John 1:14",
-                        postsCount = 12,
-                        followersCount = 108,
-                        followingCount = 67,
-                    ),
-                    stats = ProfileStats(
-                        totalReadings = 342,
-                        readingStreak = 27,
-                        bookmarks = 84,
-                        reflectionsPosted = 12,
-                    ),
+            uiState = ProfileUiState.Success(
+                profile = UserProfile(
+                    id = "u-1",
+                    displayName = "Maria Santos",
+                    email = "maria@verbum.app",
+                    bio = "Seeking Christ in Scripture, liturgy, and daily prayer.",
+                    parish = "St. Joseph Parish",
+                    favoriteVerse = "John 1:14",
+                    postsCount = 12,
+                    followersCount = 108,
+                    followingCount = 67,
                 ),
-                onNavigateBack = {},
-                onRetry = {},
+                stats = ProfileStats(
+                    totalReadings = 342,
+                    readingStreak = 27,
+                    bookmarks = 84,
+                    reflectionsPosted = 12,
+                ),
+            ),
+            onNavigateBack = {},
+            onRetry = {},
             )
         }
     }

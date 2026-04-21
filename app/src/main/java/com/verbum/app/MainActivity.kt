@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.verbum.app.bootstrap.DataBootstrapCoordinator
 import com.verbum.app.icon.SeasonalIconManager
 import com.verbum.app.navigation.VerbumApp
 import com.verbum.core.common.model.LiturgicalSeason
@@ -19,9 +20,11 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject lateinit var seasonalIconManager: SeasonalIconManager
+    @Inject lateinit var dataBootstrapCoordinator: DataBootstrapCoordinator
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition { !dataBootstrapCoordinator.criticalDataReady.value }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 

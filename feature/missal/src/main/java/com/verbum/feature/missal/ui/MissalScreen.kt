@@ -47,7 +47,10 @@ import com.verbum.core.ui.components.VerbumLoadingIndicator
 import com.verbum.core.ui.theme.CrimsonTextFamily
 import com.verbum.core.ui.theme.LocalLiturgicalSeason
 import com.verbum.core.ui.theme.VerbumSpacing
-import com.verbum.core.ui.theme.VerbumScreenPreviews
+import androidx.compose.material3.Surface
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import com.verbum.core.ui.theme.VerbumPreviewVariant
+import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
 import com.verbum.core.ui.theme.VerbumTheme
 import com.verbum.feature.missal.domain.model.DailyReadings
 import com.verbum.feature.missal.domain.model.MissalReading
@@ -226,38 +229,40 @@ private fun ReadingCard(reading: MissalReading) {
 
 @Preview(showBackground = true)
 @Composable
-private fun MissalScreenPreview() {
-    VerbumScreenPreviews { season, darkTheme ->
-        VerbumTheme(liturgicalSeason = season, darkTheme = darkTheme) {
+private fun MissalScreenPreview(
+    @PreviewParameter(VerbumPreviewVariantProvider::class) variant: VerbumPreviewVariant,
+) {
+    VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             MissalContent(
                 uiState = MissalUiState.Loaded(
                     selectedDate = "2026-04-15",
                     dailyReadings = DailyReadings(
                         date = "2026-04-15",
-                        season = LiturgicalSeason.EASTER,
-                        feastOrMemorial = "Wednesday of the 3rd Week of Easter",
-                        readings = listOf(
-                            MissalReading(
-                                id = "1",
-                                type = ReadingType.FIRST_READING,
-                                title = "First Reading",
-                                reference = "Acts 8:1b-8",
-                                text = "There broke out a severe persecution of the Church in Jerusalem...",
-                            ),
-                            MissalReading(
-                                id = "2",
-                                type = ReadingType.PSALM,
-                                title = "Responsorial Psalm",
-                                reference = "Ps 66:1-3a, 4-5, 6-7a",
-                                text = "R. Let all the earth cry out to God with joy.\nShout joyfully to God, all the earth...",
-                            ),
-                            MissalReading(
-                                id = "3",
-                                type = ReadingType.GOSPEL,
-                                title = "Gospel",
-                                reference = "John 6:35-40",
-                                text = "Jesus said to the crowds, \"I am the bread of life; whoever comes to me will never hunger...\"",
-                            ),
+                        season = variant.season,
+                    feastOrMemorial = "Wednesday of the 3rd Week of Easter",
+                    readings = listOf(
+                        MissalReading(
+                            id = "1",
+                            type = ReadingType.FIRST_READING,
+                            title = "First Reading",
+                            reference = "Acts 8:1b-8",
+                            text = "There broke out a severe persecution of the Church in Jerusalem...",
+                        ),
+                        MissalReading(
+                            id = "2",
+                            type = ReadingType.PSALM,
+                            title = "Responsorial Psalm",
+                            reference = "Ps 66:1-3a, 4-5, 6-7a",
+                            text = "R. Let all the earth cry out to God with joy.\nShout joyfully to God, all the earth...",
+                        ),
+                        MissalReading(
+                            id = "3",
+                            type = ReadingType.GOSPEL,
+                            title = "Gospel",
+                            reference = "John 6:35-40",
+                            text = "Jesus said to the crowds, \"I am the bread of life; whoever comes to me will never hunger...\"",
+                        ),
                         ),
                     ),
                 ),

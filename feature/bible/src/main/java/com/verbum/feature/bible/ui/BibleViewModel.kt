@@ -8,6 +8,8 @@ import com.verbum.feature.bible.domain.GetBibleBooksUseCase
 import com.verbum.feature.bible.domain.SearchBibleUseCase
 import com.verbum.feature.bible.domain.model.Testament
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +26,7 @@ class BibleViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<BibleUiState>(BibleUiState.Loading)
     val uiState: StateFlow<BibleUiState> = _uiState.asStateFlow()
+    private var searchJob: Job? = null
 
     init {
         observeBooks()
@@ -54,16 +57,20 @@ class BibleViewModel @Inject constructor(
         val current = _uiState.value
         if (current !is BibleUiState.BooksLoaded) return
 
-        _uiState.value = current.copy(searchQuery = query, isSearching = query.length >= 3)
+        _uiState.value = current.copy(searchQuery = query, isSearching = query.length >= 2)
 
-        if (query.length >= 3) {
-            viewModelScope.launch {
+        searchJob?.cancel()
+        if (query.length >= 2) {
+            searchJob = viewModelScope.launch {
+                delay(300)
                 val results = searchBible(query)
                 val latest = _uiState.value
                 if (latest is BibleUiState.BooksLoaded) {
                     _uiState.value = latest.copy(searchResults = results, isSearching = false)
                 }
             }
+        } else {
+            _uiState.value = current.copy(searchQuery = query, searchResults = emptyList(), isSearching = false)
         }
     }
 }

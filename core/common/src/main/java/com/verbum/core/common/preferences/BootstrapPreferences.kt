@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import com.verbum.core.common.constants.VerbumConstants
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -25,7 +26,10 @@ class BootstrapPreferences @Inject constructor(
     private companion object {
         val BIBLE_PRELOADED = booleanPreferencesKey("bible_preloaded")
         val PRAYERS_PRELOADED = booleanPreferencesKey("prayers_preloaded")
+        val PRAYERS_ASSET_VERSION = intPreferencesKey("prayers_asset_version")
         val PREFERRED_BIBLE_LANGUAGE = stringPreferencesKey("preferred_bible_language")
+        val READING_THEME = stringPreferencesKey("reading_theme")
+        val READING_MODE = stringPreferencesKey("reading_mode")
     }
 
     suspend fun isBiblePreloaded(): Boolean {
@@ -61,6 +65,44 @@ class BootstrapPreferences @Inject constructor(
     suspend fun markPrayersPreloaded() {
         context.bootstrapDataStore.edit { prefs ->
             prefs[PRAYERS_PRELOADED] = true
+        }
+    }
+
+    suspend fun getPrayersAssetVersion(): Int {
+        return context.bootstrapDataStore.data.map { prefs ->
+            prefs[PRAYERS_ASSET_VERSION] ?: 0
+        }.first()
+    }
+
+    suspend fun setPrayersAssetVersion(version: Int) {
+        context.bootstrapDataStore.edit { prefs ->
+            prefs[PRAYERS_ASSET_VERSION] = version
+        }
+    }
+
+    // ── Reading preferences ──
+
+    suspend fun getReadingTheme(): String? {
+        return context.bootstrapDataStore.data.map { prefs ->
+            prefs[READING_THEME]
+        }.first()
+    }
+
+    suspend fun setReadingTheme(themeId: String) {
+        context.bootstrapDataStore.edit { prefs ->
+            prefs[READING_THEME] = themeId
+        }
+    }
+
+    suspend fun getReadingMode(): String? {
+        return context.bootstrapDataStore.data.map { prefs ->
+            prefs[READING_MODE]
+        }.first()
+    }
+
+    suspend fun setReadingMode(mode: String) {
+        context.bootstrapDataStore.edit { prefs ->
+            prefs[READING_MODE] = mode
         }
     }
 }

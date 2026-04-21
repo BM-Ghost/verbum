@@ -1,0 +1,89 @@
+---
+name: "Feature Request"
+description: "Propose a new feature or enhancement for the Verbum app"
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees:
+  - BM-Ghost
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for contributing ideas to Verbum. Please describe your feature request clearly so it can be evaluated against the app's Catholic mission and technical architecture.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: "Feature Summary"
+      description: "One or two sentences describing the proposed feature."
+      placeholder: "As a user, I want to… so that I can…"
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: "Motivation / Problem Statement"
+      description: "What user problem or gap does this solve? Why is this valuable?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: "Proposed Solution"
+      description: "Describe the behaviour, UI, or implementation approach you envision."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives Considered"
+      description: "Have you considered alternative solutions or workarounds?"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: affected_module
+    attributes:
+      label: "Affected Module(s)"
+      description: "Which feature module(s) would this touch?"
+      multiple: true
+      options:
+        - "feature:bible"
+        - "feature:missal"
+        - "feature:prayer"
+        - "feature:liturgical-calendar"
+        - "feature:community"
+        - "feature:ai-verbum"
+        - "feature:auth"
+        - "feature:profile"
+        - "core:database"
+        - "core:network"
+        - "core:ui"
+        - "core:common"
+        - "New module needed"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: "Estimated Complexity"
+      options:
+        - "Small — UI-only change, no new data layer"
+        - "Medium — new ViewModel + Repository logic"
+        - "Large — new module, schema change, or API integration"
+        - "Unknown"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: "Contribution"
+      options:
+        - label: "I am willing to implement this feature and submit a PR following the Engineering Guidelines in README.md"
+          required: false

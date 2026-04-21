@@ -1,0 +1,121 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Verbum · Deploy — SIT (System Integration Testing)
+# ─────────────────────────────────────────────────────────────────────────────
+# Triggers: push/merge into sit, or manual dispatch.
+# Distributes a signed debug APK to the SIT tester group on Firebase App
+# Distribution. No manual approval gate here — SIT is automatic.
+#
+# Required secrets (repo-level):
+#   KEYSTORE_BASE64               – base64-encoded debug/SIT keystore (.jks)
+#   KEYSTORE_PASSWORD             – keystore store password
+#   KEY_ALIAS                     – key alias
+#   KEY_PASSWORD                  – key password
+#   FIREBASE_APP_ID_SIT           – Firebase App ID for the SIT variant
+#   FIREBASE_SERVICE_ACCOUNT_JSON – Firebase service account with App Distribution role
+# ─────────────────────────────────────────────────────────────────────────────
+name: "Deploy — SIT"
+
+on:
+  push:
+    branches: [sit]
+  workflow_dispatch:
+    inputs:
+      release_notes:
+        description: "Release notes for SIT testers"
+        required: false
+        default: "SIT build — see commit history for changes."
+
+concurrency:
+  group: "deploy-sit"
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  checks: write
+
+env:
+  JAVA_VERSION: "17"
+  JAVA_DISTRIBUTION: "temurin"
+  GRADLE_OPTS: "-Xmx4g -Xms512m -Dfile.encoding=UTF-8"
+
+jobs:
+  # ─── Pre-deploy validation ──────────────────────────────────────────────────
+  validate:
+    name: "Pre-Deploy Validation"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: true
+
+      - name: Engineering Guidelines
+        run: ./gradlew verifyVerbumGuidelines --no-daemon
+
+      - name: Android Lint
+        run: ./gradlew lintDebug --no-daemon
+
+      - name: Unit Tests
+        run: ./gradlew testDebugUnitTest --no-daemon --continue
+
+  # ─── Build & distribute ─────────────────────────────────────────────────────
+  build-and-distribute:
+    name: "Build & Distribute to SIT"
+    needs: validate
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    environment: sit
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: true
+
+      - name: Decode SIT Keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/verbum-sit.keystore
+
+      - name: Build Debug APK (SIT)
+        run: ./gradlew :app:assembleDebug --no-daemon
+        env:
+          KEYSTORE_FILE_PATH: verbum-sit.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "verbum-sit-${{ github.run_number }}"
+          path: "app/build/outputs/apk/debug/app-debug.apk"
+          retention-days: 21
+
+      - name: Distribute to Firebase App Distribution (SIT)
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID_SIT }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          groups: sit-testers
+          file: app/build/outputs/apk/debug/app-debug.apk
+          releaseNotes: |
+            ${{ github.event.inputs.release_notes || format('SIT Build #{0} | Branch: {1} | {2}', github.run_number, github.ref_name, github.sha) }}
+
+      - name: Clean up Keystore
+        if: always()
+        run: rm -f app/verbum-sit.keystore

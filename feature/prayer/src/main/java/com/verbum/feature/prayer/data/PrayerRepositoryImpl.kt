@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import timber.log.Timber
 import javax.inject.Inject
 
 class PrayerRepositoryImpl @Inject constructor(
@@ -42,7 +43,9 @@ class PrayerRepositoryImpl @Inject constructor(
 
     override suspend fun getPrayerById(id: String): Prayer? {
         prayerAssetSeeder.ensureSeeded()
-        return prayerDao.getPrayerById(id)?.toDomain()
+        val entity = prayerDao.getPrayerById(id)
+        Timber.d("PrayerRepositoryImpl.getPrayerById('$id'): entity=${entity?.title ?: "null"}")
+        return entity?.toDomain()
     }
 
     private fun com.verbum.core.database.entity.PrayerEntity.toDomain(): Prayer {

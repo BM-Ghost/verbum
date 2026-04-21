@@ -94,6 +94,8 @@ sealed class VerbumDestination(
 
     data object LiturgicalCalendar : VerbumDestination(route = "liturgical_calendar", title = "Calendar")
 
+    data object BibleDiagnostics : VerbumDestination(route = "bible_diagnostics", title = "Bible Diagnostics")
+
     companion object {
         val bottomNavItems = listOf(Home, Bible, Missal, Prayer, Community)
     }

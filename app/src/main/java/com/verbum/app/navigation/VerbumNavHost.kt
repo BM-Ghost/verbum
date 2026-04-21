@@ -39,14 +39,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.verbum.app.BuildConfig
 import com.verbum.feature.ai.ui.AiChatScreen
 import com.verbum.feature.auth.ui.AuthScreen
+import com.verbum.feature.bible.ui.BibleDiagnosticsScreen
 import com.verbum.feature.bible.ui.BibleReaderScreen
 import com.verbum.feature.bible.ui.BibleScreen
 import com.verbum.feature.calendar.ui.LiturgicalCalendarScreen
 import com.verbum.feature.community.ui.CommunityFeedScreen
 import com.verbum.feature.community.ui.CreatePostScreen
 import com.verbum.feature.home.HomeScreen
+import com.verbum.feature.home.HomeViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.verbum.feature.missal.ui.MissalScreen
 import com.verbum.feature.prayer.ui.PrayerDetailScreen
 import com.verbum.feature.prayer.ui.PrayerScreen
@@ -181,6 +185,8 @@ fun VerbumApp() {
         ) {
             // ── Home ──
             composable(VerbumDestination.Home.route) {
+                val homeViewModel: HomeViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+                val continueReading by homeViewModel.continueReading.collectAsStateWithLifecycle()
                 HomeScreen(
                     onNavigateToBible = {
                         navController.navigate(VerbumDestination.Bible.route) {
@@ -213,6 +219,12 @@ fun VerbumApp() {
                         }
                     },
                     onNavigateToCalendar = { navController.navigate(VerbumDestination.LiturgicalCalendar.route) },
+                    onNavigateToReader = { bookId, chapter ->
+                        navController.navigate(
+                            VerbumDestination.BibleReader.createRoute(bookId, chapter),
+                        )
+                    },
+                    continueReadingState = continueReading,
                 )
             }
 
@@ -224,7 +236,23 @@ fun VerbumApp() {
                             VerbumDestination.BibleReader.createRoute(bookId, chapter)
                         )
                     },
+                    onOpenDiagnostics = if (BuildConfig.DEBUG) {
+                        {
+                            navController.navigate(VerbumDestination.BibleDiagnostics.route)
+                        }
+                    } else {
+                        null
+                    },
+                    showDiagnosticsButton = BuildConfig.DEBUG,
                 )
+            }
+
+            if (BuildConfig.DEBUG) {
+                composable(VerbumDestination.BibleDiagnostics.route) {
+                    BibleDiagnosticsScreen(
+                        onNavigateBack = { navController.popBackStack() },
+                    )
+                }
             }
 
             composable(
