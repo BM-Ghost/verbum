@@ -34,8 +34,15 @@ class BibleAssetSeeder @Inject constructor(
             diagnosticsTracker.markSeedingStarted()
             try {
                 val books = loadBookMetadata()
+                val canonicalBookIds = books.map { it.id }
+
+                bibleDao.deleteVersesForUnknownBooks(canonicalBookIds)
+                bibleDao.deleteBooksNotIn(canonicalBookIds)
+
                 if (bibleDao.countBooks() == 0) {
                     bibleDao.insertBooks(books.map { it.toEntity(totalChapters = 0) })
+                } else {
+                    bibleDao.updateBooks(books.map { it.toEntity(totalChapters = 0) })
                 }
 
                 // PHASE 1: Insert verses (critical - must complete)
@@ -163,10 +170,33 @@ class BibleAssetSeeder @Inject constructor(
         )
     }
 
+    private suspend fun shouldReseedLanguage(
+        languageCode: String,
+        books: List<BookMeta>,
+        existingVerseCount: Int,
+    ): Boolean {
+        if (existingVerseCount < MIN_REQUIRED_VERSE_COUNT) return true
+
+        val missingBookCount = books.count { book ->
+            (bibleDao.getChapterCount(book.id, languageCode) ?: 0) <= 0
+        }
+
+        if (missingBookCount > 0) {
+            Timber.w(
+                "Language %s has %d missing books; forcing reseed.",
+                languageCode,
+                missingBookCount,
+            )
+            return true
+        }
+
+        return false
+    }
+
     private suspend fun seedLatinVulsearchIfNeeded(books: List<BookMeta>) {
         val existing = bibleDao.countVerses(LATIN_LANGUAGE_CODE)
-        if (existing >= MIN_REQUIRED_VERSE_COUNT) {
-            Timber.i("Latin verses already seeded (%d verses)", existing)
+        if (!shouldReseedLanguage(LATIN_LANGUAGE_CODE, books, existing)) {
+            Timber.i("Latin verses already seeded and complete (%d verses)", existing)
             return
         }
         if (existing > 0) {
@@ -242,8 +272,8 @@ class BibleAssetSeeder @Inject constructor(
 
     private suspend fun seedEnglishPg1581IfNeeded(books: List<BookMeta>) {
         val existing = bibleDao.countVerses(ENGLISH_LANGUAGE_CODE)
-        if (existing >= MIN_REQUIRED_VERSE_COUNT) {
-            Timber.i("English verses already seeded (%d verses)", existing)
+        if (!shouldReseedLanguage(ENGLISH_LANGUAGE_CODE, books, existing)) {
+            Timber.i("English verses already seeded and complete (%d verses)", existing)
             return
         }
         if (existing > 0) {
@@ -438,17 +468,21 @@ class BibleAssetSeeder @Inject constructor(
                 .toList()
         }
 
-        return rows.mapIndexed { index, row ->
+        return rows.mapIndexedNotNull { _, row ->
             val parts = row.split(',')
             val abbr = parts[0].trim().uppercase()
-            val testament = parts.getOrNull(1)?.trim().orEmpty()
+            val testament = parts.getOrNull(1)?.trim()?.uppercase().orEmpty()
+            if (testament != "OT" && testament != "NT") return@mapIndexedNotNull null
+
             BookMeta(
-                id = index + 1,
+                id = 0,
                 abbreviation = abbr,
                 name = CANONICAL_BOOK_NAMES[abbr] ?: abbr,
-                testament = if (testament == "NT") "NT" else "OT",
-                orderIndex = index + 1,
+                testament = testament,
+                orderIndex = 0,
             )
+        }.mapIndexed { index, meta ->
+            meta.copy(id = index + 1, orderIndex = index + 1)
         }
     }
 
@@ -563,9 +597,6 @@ class BibleAssetSeeder @Inject constructor(
             "3JN" to "3 John",
             "JUD" to "Jude",
             "REV" to "Revelation",
-            "MAN" to "Prayer of Manasses",
-            "1ES" to "3 Esdras",
-            "2ES" to "4 Esdras",
         )
     }
 }

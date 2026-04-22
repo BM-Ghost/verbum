@@ -38,6 +38,9 @@ interface BibleDao {
     @Query("SELECT COUNT(*) FROM bible_books")
     suspend fun countBooks(): Int
 
+    @Query("DELETE FROM bible_books WHERE id NOT IN (:bookIds)")
+    suspend fun deleteBooksNotIn(bookIds: List<Int>)
+
     // ── Verses ──
     @Query("SELECT * FROM bible_verses WHERE languageCode = :languageCode AND bookId = :bookId AND chapter = :chapter ORDER BY verse ASC")
     fun getVerses(bookId: Int, chapter: Int, languageCode: String): Flow<List<BibleVerseEntity>>
@@ -92,6 +95,9 @@ interface BibleDao {
     suspend fun getBookByAbbreviation(abbr: String): BibleBookEntity?
     @Query("DELETE FROM bible_verses WHERE languageCode = :languageCode")
     suspend fun deleteVersesByLanguage(languageCode: String)
+
+    @Query("DELETE FROM bible_verses WHERE bookId NOT IN (:bookIds)")
+    suspend fun deleteVersesForUnknownBooks(bookIds: List<Int>)
 
     @Query("SELECT MAX(chapter) FROM bible_verses WHERE bookId = :bookId AND languageCode = :languageCode")
     suspend fun getChapterCount(bookId: Int, languageCode: String): Int?
