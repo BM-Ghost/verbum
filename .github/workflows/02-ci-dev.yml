@@ -44,7 +44,7 @@ jobs:
           cache: gradle
 
       - name: Setup Gradle (cache write enabled)
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v6
         with:
           cache-read-only: false
           add-job-summary: always
