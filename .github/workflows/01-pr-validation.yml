@@ -115,7 +115,7 @@ jobs:
 
       - name: Upload Lint Report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "lint-report-pr${{ github.event.pull_request.number }}"
           path: "**/build/reports/lint-results-debug.html"
@@ -146,7 +146,7 @@ jobs:
 
       - name: Upload Test Results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "test-results-pr${{ github.event.pull_request.number }}"
           path: |
@@ -190,7 +190,7 @@ jobs:
         run: ./gradlew :app:assembleDebug --no-daemon
 
       - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "debug-apk-pr${{ github.event.pull_request.number }}"
           path: "app/build/outputs/apk/debug/app-debug.apk"
