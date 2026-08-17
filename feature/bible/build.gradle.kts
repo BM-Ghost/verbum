@@ -33,6 +33,7 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:ui"))
     implementation(project(":core:database"))
+    implementation(project(":core:network"))
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
@@ -51,6 +52,7 @@ dependencies {
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.compose)
     implementation(libs.timber)
+    implementation(libs.okhttp)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

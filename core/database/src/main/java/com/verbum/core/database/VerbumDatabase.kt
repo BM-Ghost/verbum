@@ -11,6 +11,7 @@ import com.verbum.core.database.dao.PrayerDao
 import com.verbum.core.database.dao.ReadingHistoryDao
 import com.verbum.core.database.entity.BibleBookEntity
 import com.verbum.core.database.entity.BibleVerseEntity
+import com.verbum.core.database.entity.BibleCrossReferenceEntity
 import com.verbum.core.database.entity.BookmarkEntity
 import com.verbum.core.database.entity.CommunityPostEntity
 import com.verbum.core.database.entity.MissalReadingEntity
@@ -22,6 +23,7 @@ import com.verbum.core.database.entity.ReadingHistoryEntity
     entities = [
         BibleBookEntity::class,
         BibleVerseEntity::class,
+        BibleCrossReferenceEntity::class,
         BookmarkEntity::class,
         NoteEntity::class,
         MissalReadingEntity::class,
@@ -29,7 +31,7 @@ import com.verbum.core.database.entity.ReadingHistoryEntity
         CommunityPostEntity::class,
         ReadingHistoryEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class VerbumDatabase : RoomDatabase() {

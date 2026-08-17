@@ -6,6 +6,7 @@ import com.verbum.core.common.extensions.asResult
 import com.verbum.core.common.result.VerbumResult
 import com.verbum.feature.bible.domain.GetBibleBooksUseCase
 import com.verbum.feature.bible.domain.SearchBibleUseCase
+import com.verbum.feature.bible.domain.RefreshBibleOnlineUseCase
 import com.verbum.feature.bible.domain.model.Testament
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -22,6 +23,7 @@ import javax.inject.Inject
 class BibleViewModel @Inject constructor(
     private val getBibleBooks: GetBibleBooksUseCase,
     private val searchBible: SearchBibleUseCase,
+    private val refreshBibleOnline: RefreshBibleOnlineUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<BibleUiState>(BibleUiState.Loading)
@@ -71,6 +73,23 @@ class BibleViewModel @Inject constructor(
             }
         } else {
             _uiState.value = current.copy(searchQuery = query, searchResults = emptyList(), isSearching = false)
+        }
+    }
+
+    fun refreshBibleOnline() {
+        val current = _uiState.value as? BibleUiState.BooksLoaded ?: return
+        if (current.isRefreshingOnline) return
+        _uiState.value = current.copy(isRefreshingOnline = true, onlineMessage = null)
+        viewModelScope.launch {
+            val result = refreshBibleOnline()
+            val latest = _uiState.value as? BibleUiState.BooksLoaded ?: return@launch
+            _uiState.value = latest.copy(
+                isRefreshingOnline = false,
+                onlineMessage = result.fold(
+                    onSuccess = { "Updated $it local verses" },
+                    onFailure = { "Offline cache kept: ${it.message ?: "refresh unavailable"}" },
+                ),
+            )
         }
     }
 }

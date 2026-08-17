@@ -8,6 +8,7 @@ import androidx.room.Update
 import androidx.paging.PagingSource
 import com.verbum.core.database.entity.BibleBookEntity
 import com.verbum.core.database.entity.BibleVerseEntity
+import com.verbum.core.database.entity.BibleCrossReferenceEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -110,4 +111,23 @@ interface BibleDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertVerses(verses: List<BibleVerseEntity>)
+
+    @Query(
+        """
+        SELECT * FROM bible_cross_references
+        WHERE fromBookId = :bookId AND fromChapter = :chapter AND fromVerse = :verse
+        ORDER BY votes DESC
+        LIMIT :limit
+        """
+    )
+    suspend fun getCrossReferences(bookId: Int, chapter: Int, verse: Int, limit: Int = 20): List<BibleCrossReferenceEntity>
+
+    @Query("SELECT COUNT(*) FROM bible_cross_references")
+    suspend fun countCrossReferences(): Int
+
+    @Query("DELETE FROM bible_cross_references")
+    suspend fun deleteCrossReferences()
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertCrossReferences(references: List<BibleCrossReferenceEntity>)
 }

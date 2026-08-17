@@ -14,8 +14,10 @@ import com.verbum.core.database.dao.BookmarkDao
 import com.verbum.core.database.dao.ReadingHistoryDao
 import com.verbum.core.database.entity.BookmarkEntity
 import com.verbum.core.database.entity.ReadingHistoryEntity
+import com.verbum.feature.bible.data.seed.BibleAssetSeeder
 import com.verbum.feature.bible.domain.model.BibleBook
 import com.verbum.feature.bible.domain.model.BibleLanguage
+import com.verbum.feature.bible.domain.model.BibleCrossReference
 import com.verbum.feature.bible.domain.model.Testament
 import com.verbum.feature.bible.domain.model.Verse
 import java.util.Locale
@@ -34,10 +36,17 @@ class BibleRepositoryImpl @Inject constructor(
     private val bookmarkDao: BookmarkDao,
     private val readingHistoryDao: ReadingHistoryDao,
     private val bootstrapPreferences: BootstrapPreferences,
+    private val bibleAssetSeeder: BibleAssetSeeder,
     @Dispatcher(VerbumDispatcher.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : BibleRepository {
 
     private val chapterCache = LruCache<String, List<Verse>>(24)
+
+    override suspend fun refreshDrcFromOnline(): Result<Int> = withContext(ioDispatcher) {
+        bibleAssetSeeder.refreshDrcFromOnline().also { result ->
+            if (result.isSuccess) chapterCache.evictAll()
+        }
+    }
 
     override fun getAllBooks(): Flow<List<BibleBook>> {
         return flow {
@@ -240,6 +249,28 @@ class BibleRepositoryImpl @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    override suspend fun getCrossReferences(
+        bookId: Int,
+        chapter: Int,
+        verse: Int,
+        limit: Int,
+    ): List<BibleCrossReference> = withContext(ioDispatcher) {
+        val bookNames = bibleDao.getAllBooks().first().associate { it.id to it.name }
+        bibleDao.getCrossReferences(bookId, chapter, verse, limit).map { reference ->
+            BibleCrossReference(
+                fromBookId = reference.fromBookId,
+                fromChapter = reference.fromChapter,
+                fromVerse = reference.fromVerse,
+                toBookId = reference.toBookId,
+                toBookName = bookNames[reference.toBookId].orEmpty(),
+                toChapter = reference.toChapter,
+                toVerseStart = reference.toVerseStart,
+                toVerseEnd = reference.toVerseEnd,
+                votes = reference.votes,
+            )
         }
     }
 

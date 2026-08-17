@@ -29,6 +29,18 @@ data class Verse(
     val note: String? = null,
 )
 
+data class BibleCrossReference(
+    val fromBookId: Int,
+    val fromChapter: Int,
+    val fromVerse: Int,
+    val toBookId: Int,
+    val toBookName: String,
+    val toChapter: Int,
+    val toVerseStart: Int,
+    val toVerseEnd: Int,
+    val votes: Int,
+)
+
 data class VerseAction(
     val verse: Verse,
     val type: VerseActionType,

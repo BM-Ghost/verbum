@@ -3,6 +3,7 @@ package com.verbum.feature.bible.data
 import com.verbum.feature.bible.domain.model.BibleBook
 import com.verbum.feature.bible.domain.model.BibleLanguage
 import com.verbum.feature.bible.domain.model.Verse
+import com.verbum.feature.bible.domain.model.BibleCrossReference
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 
@@ -13,6 +14,8 @@ interface BibleRepository {
     fun getVerses(bookId: Int, chapter: Int): Flow<List<Verse>>
     suspend fun searchVerses(query: String): List<Verse>
     suspend fun searchByReference(bookQuery: String, chapter: Int, verseStart: Int?, verseEnd: Int?): List<Verse>
+    suspend fun getCrossReferences(bookId: Int, chapter: Int, verse: Int, limit: Int = 20): List<BibleCrossReference>
+    suspend fun refreshDrcFromOnline(): Result<Int>
     suspend fun toggleBookmark(bookId: Int, chapter: Int, verse: Int)
     suspend fun getChapterCount(bookId: Int): Int
     suspend fun getAvailableLanguages(): List<BibleLanguage>

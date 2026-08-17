@@ -7,6 +7,7 @@ import com.verbum.core.common.extensions.asResult
 import com.verbum.core.common.result.VerbumResult
 import com.verbum.feature.bible.data.BibleRepository
 import com.verbum.feature.bible.domain.GetChapterCountUseCase
+import com.verbum.feature.bible.domain.GetCrossReferencesUseCase
 import com.verbum.feature.bible.domain.GetVersesUseCase
 import com.verbum.feature.bible.domain.SearchBibleUseCase
 import com.verbum.feature.bible.domain.ToggleBookmarkUseCase
@@ -37,10 +38,12 @@ class BibleReaderViewModel @Inject constructor(
     private val toggleBookmark: ToggleBookmarkUseCase,
     private val searchBible: SearchBibleUseCase,
     private val repository: BibleRepository,
+    private val getCrossReferences: GetCrossReferencesUseCase,
 ) : ViewModel() {
 
     private val bookId: Int = savedStateHandle.get<Int>("bookId") ?: 1
     private val initialChapter: Int = savedStateHandle.get<Int>("chapter") ?: 1
+    private var pendingInitialVerse: Int? = savedStateHandle.get<Int>("verse")?.takeIf { it > 0 }
     private val selectedChapter = MutableStateFlow(initialChapter)
     private val totalChapters = MutableStateFlow(1)
     private var pendingNavigationChapter: Int? = null
@@ -135,7 +138,9 @@ class BibleReaderViewModel @Inject constructor(
                             searchSuggestions = existingState?.searchSuggestions.orEmpty(),
                             searchResults = existingState?.searchResults.orEmpty(),
                             isLoadingNextChapter = existingState?.isLoadingNextChapter ?: false,
-                            targetVerse = existingState?.targetVerse,
+                            targetVerse = existingState?.targetVerse ?: pendingInitialVerse.also { pendingInitialVerse = null },
+                            crossReferences = existingState?.crossReferences.orEmpty(),
+                            isLoadingCrossReferences = existingState?.isLoadingCrossReferences ?: false,
                         )
                     }
                     is VerbumResult.Error -> BibleReaderUiState.Error("Failed to load chapter")
@@ -237,7 +242,23 @@ class BibleReaderViewModel @Inject constructor(
     fun onVerseSelected(verse: Verse) {
         val current = _uiState.value
         if (current is BibleReaderUiState.Loaded) {
-            _uiState.value = current.copy(selectedVerse = verse)
+            _uiState.value = current.copy(
+                selectedVerse = verse,
+                crossReferences = emptyList(),
+                isLoadingCrossReferences = true,
+            )
+            viewModelScope.launch {
+                val references = runCatching {
+                    getCrossReferences(bookId, verse.chapter, verse.verseNumber)
+                }.getOrDefault(emptyList())
+                val loaded = _uiState.value as? BibleReaderUiState.Loaded ?: return@launch
+                if (loaded.selectedVerse == verse) {
+                    _uiState.value = loaded.copy(
+                        crossReferences = references,
+                        isLoadingCrossReferences = false,
+                    )
+                }
+            }
         }
     }
 

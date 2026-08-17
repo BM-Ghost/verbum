@@ -25,6 +25,7 @@ class BootstrapPreferences @Inject constructor(
 ) {
     private companion object {
         val BIBLE_PRELOADED = booleanPreferencesKey("bible_preloaded")
+        val BIBLE_ASSET_VERSION = intPreferencesKey("bible_asset_version")
         val PRAYERS_PRELOADED = booleanPreferencesKey("prayers_preloaded")
         val PRAYERS_ASSET_VERSION = intPreferencesKey("prayers_asset_version")
         val PREFERRED_BIBLE_LANGUAGE = stringPreferencesKey("preferred_bible_language")
@@ -41,6 +42,18 @@ class BootstrapPreferences @Inject constructor(
     suspend fun markBiblePreloaded() {
         context.bootstrapDataStore.edit { prefs ->
             prefs[BIBLE_PRELOADED] = true
+        }
+    }
+
+    suspend fun getBibleAssetVersion(): Int {
+        return context.bootstrapDataStore.data.map { prefs ->
+            prefs[BIBLE_ASSET_VERSION] ?: 0
+        }.first()
+    }
+
+    suspend fun setBibleAssetVersion(version: Int) {
+        context.bootstrapDataStore.edit { prefs ->
+            prefs[BIBLE_ASSET_VERSION] = version
         }
     }
 

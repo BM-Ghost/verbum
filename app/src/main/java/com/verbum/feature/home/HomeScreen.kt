@@ -92,7 +92,7 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit,
     onNavigateToCommunity: () -> Unit,
     onNavigateToCalendar: () -> Unit,
-    onNavigateToReader: (bookId: Int, chapter: Int) -> Unit = { _, _ -> },
+    onNavigateToReader: (bookId: Int, chapter: Int, verse: Int) -> Unit = { _, _, _ -> },
     modifier: Modifier = Modifier,
     continueReadingState: ContinueReadingState? = null,
 ) {
@@ -216,7 +216,7 @@ fun HomeScreen(
                         bookName = readingState.bookName,
                         chapter = readingState.chapter,
                         lastVerse = readingState.lastVerse,
-                        onClick = { onNavigateToReader(readingState.bookId, readingState.chapter) },
+                        onClick = { onNavigateToReader(readingState.bookId, readingState.chapter, readingState.lastVerse) },
                     )
                 }
 

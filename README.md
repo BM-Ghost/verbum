@@ -12,7 +12,7 @@
 
 ## Core Product Areas
 
-- **Bible** — multilingual Scripture reading (English + Latin Vulgate), paged, local-first.
+- **Bible** — Douay-Rheims Bible, Challoner Revision (DRC), paged and local-first.
 - **Liturgy** — daily Missal readings and liturgical calendar, works fully offline.
 - **Prayer** — seeded prayer content, readily available without a network connection.
 - **Community + AI Verbum** — social features and AI-assisted reflection, built on the same modular foundation.
@@ -37,9 +37,9 @@ feature/    → self-contained feature modules
 
 ### What Is Included
 
-- English Bible source (`pg1581`) packaged in app assets.
-- Latin Vulgate source (`vulsearch_vulgate`) packaged in app assets.
-- Canonical mapping and book metadata for all supported books.
+- English DRC source packaged in app assets from `scrollmapper/bible_databases` (2025).
+- OpenBible cross-reference data packaged from the same project's 2025 source extras.
+- Canonical mapping and book metadata for all 73 Catholic books.
 - Locale-aware language selection with user override support.
 
 ### Data Flow
@@ -49,7 +49,7 @@ feature/    → self-contained feature modules
 	- explicit user selection
 	- compatible device locale
 	- English fallback
-	- Latin fallback (if English unavailable)
+        - English fallback
 3. Bible access is repository-driven, paged, and cache-assisted.
 
 ### Performance/Architecture Notes
@@ -58,6 +58,7 @@ feature/    → self-contained feature modules
 - Room is indexed for verse lookups.
 - Paging is used for chapter/verse retrieval.
 - In-memory chapter caching is used to reduce repeated I/O.
+- Cross-references are streamed into indexed Room storage during bootstrap and queried by source verse with vote ranking.
 
 ## Liturgy (Missal + Calendar) Implementation
 
@@ -80,7 +81,8 @@ This keeps the liturgy experience usable offline while allowing refresh when con
 
 ## Assets and Seeding
 
-- Bible assets: `app/src/main/assets/bible/source/`
+- Bible asset: `app/src/main/assets/bible/source/scrollmapper/DRC.csv`
+- Cross-reference asset: `app/src/main/assets/bible/source/scrollmapper/cross_references.txt`
 - Missal assets: `app/src/main/assets/missal/`
 - Prayer assets: `app/src/main/assets/prayers/`
 

@@ -60,10 +60,11 @@ sealed class VerbumDestination(
 
     // Nested destinations
     data object BibleReader : VerbumDestination(
-        route = "bible/{bookId}/{chapter}",
+        route = "bible/{bookId}/{chapter}?verse={verse}",
         title = "Read",
     ) {
-        fun createRoute(bookId: Int, chapter: Int) = "bible/$bookId/$chapter"
+        fun createRoute(bookId: Int, chapter: Int, verse: Int? = null) =
+            "bible/$bookId/$chapter" + (verse?.let { "?verse=$it" } ?: "")
     }
 
     data object PrayerDetail : VerbumDestination(

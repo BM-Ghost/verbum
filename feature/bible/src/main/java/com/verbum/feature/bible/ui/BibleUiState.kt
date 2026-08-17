@@ -1,6 +1,7 @@
 package com.verbum.feature.bible.ui
 
 import com.verbum.feature.bible.domain.model.BibleBook
+import com.verbum.feature.bible.domain.model.BibleCrossReference
 import com.verbum.feature.bible.domain.model.Verse
 import com.verbum.feature.bible.ui.reading.ChapterBlock
 import com.verbum.feature.bible.ui.reading.ReadingMode
@@ -14,6 +15,8 @@ sealed interface BibleUiState {
         val searchQuery: String = "",
         val searchResults: List<Verse> = emptyList(),
         val isSearching: Boolean = false,
+        val isRefreshingOnline: Boolean = false,
+        val onlineMessage: String? = null,
     ) : BibleUiState
     data class Error(val message: String) : BibleUiState
 }
@@ -37,6 +40,8 @@ sealed interface BibleReaderUiState {
         val isLoadingNextChapter: Boolean = false,
         /** When non-null, ScrollReadingView will scroll to this verse then clear it. */
         val targetVerse: Int? = null,
+        val crossReferences: List<BibleCrossReference> = emptyList(),
+        val isLoadingCrossReferences: Boolean = false,
     ) : BibleReaderUiState
     data class Error(val message: String) : BibleReaderUiState
 }

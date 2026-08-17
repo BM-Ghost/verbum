@@ -81,6 +81,30 @@ object DatabaseModule {
         }
     }
 
+    private val migration4To5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `bible_cross_references` (
+                    `fromBookId` INTEGER NOT NULL,
+                    `fromChapter` INTEGER NOT NULL,
+                    `fromVerse` INTEGER NOT NULL,
+                    `toBookId` INTEGER NOT NULL,
+                    `toChapter` INTEGER NOT NULL,
+                    `toVerseStart` INTEGER NOT NULL,
+                    `toVerseEnd` INTEGER NOT NULL,
+                    `votes` INTEGER NOT NULL,
+                    PRIMARY KEY(`fromBookId`, `fromChapter`, `fromVerse`, `toBookId`, `toChapter`, `toVerseStart`),
+                    FOREIGN KEY(`fromBookId`) REFERENCES `bible_books`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE,
+                    FOREIGN KEY(`toBookId`) REFERENCES `bible_books`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+                )
+                """.trimIndent()
+            )
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_bible_cross_references_fromBookId_fromChapter_fromVerse_votes ON bible_cross_references(fromBookId, fromChapter, fromVerse, votes)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_bible_cross_references_toBookId_toChapter_toVerseStart ON bible_cross_references(toBookId, toChapter, toVerseStart)")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideVerbumDatabase(
@@ -91,7 +115,7 @@ object DatabaseModule {
             VerbumDatabase::class.java,
             VerbumConstants.APP_DATABASE_NAME,
         )
-                .addMigrations(migration1To2, migration2To3, migration3To4)
+                .addMigrations(migration1To2, migration2To3, migration3To4, migration4To5)
             .build()
     }
 

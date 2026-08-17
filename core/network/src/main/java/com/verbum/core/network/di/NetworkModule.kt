@@ -3,6 +3,7 @@ package com.verbum.core.network.di
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.verbum.core.network.api.VerbumApi
+import com.verbum.core.network.api.ScrollmapperApi
 import com.verbum.core.network.interceptor.AuthInterceptor
 import dagger.Module
 import dagger.Provides
@@ -62,5 +63,16 @@ object NetworkModule {
     @Singleton
     fun provideVerbumApi(retrofit: Retrofit): VerbumApi {
         return retrofit.create(VerbumApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideScrollmapperApi(client: OkHttpClient, moshi: Moshi): ScrollmapperApi {
+        return Retrofit.Builder()
+            .baseUrl("https://raw.githubusercontent.com/")
+            .client(client)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+            .create(ScrollmapperApi::class.java)
     }
 }

@@ -13,6 +13,8 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
+import okhttp3.ResponseBody
+import retrofit2.http.Streaming
 
 interface VerbumApi {
 
@@ -65,4 +67,10 @@ interface VerbumApi {
 
     @POST("groups/{id}/join")
     suspend fun joinStudyGroup(@Path("id") groupId: String)
+}
+
+interface ScrollmapperApi {
+    @Streaming
+    @GET("scrollmapper/bible_databases/2025/formats/csv/DRC.csv")
+    suspend fun downloadDrc(): ResponseBody
 }

@@ -219,9 +219,9 @@ fun VerbumApp() {
                         }
                     },
                     onNavigateToCalendar = { navController.navigate(VerbumDestination.LiturgicalCalendar.route) },
-                    onNavigateToReader = { bookId, chapter ->
+                    onNavigateToReader = { bookId, chapter, verse ->
                         navController.navigate(
-                            VerbumDestination.BibleReader.createRoute(bookId, chapter),
+                            VerbumDestination.BibleReader.createRoute(bookId, chapter, verse),
                         )
                     },
                     continueReadingState = continueReading,
@@ -260,6 +260,7 @@ fun VerbumApp() {
                 arguments = listOf(
                     navArgument("bookId") { type = NavType.IntType },
                     navArgument("chapter") { type = NavType.IntType },
+                    navArgument("verse") { type = NavType.IntType; defaultValue = -1 },
                 ),
             ) {
                 BibleReaderScreen(

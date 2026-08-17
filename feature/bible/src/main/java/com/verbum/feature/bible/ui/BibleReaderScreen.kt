@@ -43,6 +43,7 @@ import com.verbum.core.ui.theme.VerbumPreviewVariantProvider
 import com.verbum.core.ui.theme.VerbumSpacing
 import com.verbum.core.ui.theme.VerbumTheme
 import com.verbum.feature.bible.domain.model.Verse
+import com.verbum.feature.bible.domain.model.BibleCrossReference
 import com.verbum.feature.bible.ui.reading.ChapterBlock
 import com.verbum.feature.bible.ui.reading.ChapterNavigator
 import com.verbum.feature.bible.ui.reading.CodexReadingView
@@ -231,6 +232,8 @@ private fun BibleReaderContent(
                     ) {
                         VerseActionsSheet(
                             verse = verse,
+                            crossReferences = uiState.crossReferences,
+                            isLoadingCrossReferences = uiState.isLoadingCrossReferences,
                             onBookmark = { onBookmarkClick(verse) },
                             onShare = { /* share intent */ },
                             onAskAi = { onAskAi(verse) },
@@ -246,6 +249,8 @@ private fun BibleReaderContent(
 @Composable
 private fun VerseActionsSheet(
     verse: Verse,
+    crossReferences: List<BibleCrossReference>,
+    isLoadingCrossReferences: Boolean,
     onBookmark: () -> Unit,
     onShare: () -> Unit,
     onAskAi: () -> Unit,
@@ -292,6 +297,29 @@ private fun VerseActionsSheet(
                 Icon(Icons.Outlined.AutoAwesome, contentDescription = "Ask AI")
                 Spacer(Modifier.width(VerbumSpacing.sm))
                 Text("Ask Verbum AI")
+            }
+        }
+        Text(
+            text = "Related passages",
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        when {
+            isLoadingCrossReferences -> Text(
+                text = "Loading local references...",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            crossReferences.isEmpty() -> Text(
+                text = "No related passages found.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            else -> crossReferences.forEach { reference ->
+                Text(
+                    text = "${reference.toBookName} ${reference.toChapter}:${reference.toVerseStart}" +
+                        if (reference.toVerseEnd > reference.toVerseStart) "-${reference.toVerseEnd}" else "",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(vertical = VerbumSpacing.xs),
+                )
             }
         }
 

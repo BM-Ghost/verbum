@@ -30,6 +30,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -80,6 +81,7 @@ fun BibleScreen(
     BibleContent(
         uiState = uiState,
         onSearchQueryChanged = viewModel::onSearchQueryChanged,
+        onRefreshOnline = viewModel::refreshBibleOnline,
         onBookChapterSelected = onBookChapterSelected,
         onOpenDiagnostics = onOpenDiagnostics,
         showDiagnosticsButton = showDiagnosticsButton,
@@ -92,6 +94,7 @@ fun BibleScreen(
 private fun BibleContent(
     uiState: BibleUiState,
     onSearchQueryChanged: (String) -> Unit,
+    onRefreshOnline: () -> Unit,
     onBookChapterSelected: (bookId: Int, chapter: Int) -> Unit,
     onOpenDiagnostics: (() -> Unit)? = null,
     showDiagnosticsButton: Boolean = false,
@@ -115,6 +118,13 @@ private fun BibleContent(
                 }
             },
             actions = {
+                IconButton(onClick = onRefreshOnline) {
+                    if (uiState is BibleUiState.BooksLoaded && uiState.isRefreshingOnline) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                    } else {
+                        Icon(Icons.Outlined.CloudDownload, contentDescription = "Refresh Bible from the internet")
+                    }
+                }
                 if (showDiagnosticsButton && onOpenDiagnostics != null) {
                     IconButton(onClick = onOpenDiagnostics) {
                         Icon(
@@ -137,6 +147,14 @@ private fun BibleContent(
                 onRetry = {},
             )
             is BibleUiState.BooksLoaded -> {
+                uiState.onlineMessage?.let { message ->
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = VerbumSpacing.lg),
+                    )
+                }
                 // Search bar with rounded shape
                 OutlinedTextField(
                     value = uiState.searchQuery,
@@ -367,6 +385,7 @@ private fun BibleScreenPreview(
                     ),
                 ),
                 onSearchQueryChanged = {},
+                onRefreshOnline = {},
                 onBookChapterSelected = { _, _ -> },
                 onOpenDiagnostics = {},
                 showDiagnosticsButton = true,
