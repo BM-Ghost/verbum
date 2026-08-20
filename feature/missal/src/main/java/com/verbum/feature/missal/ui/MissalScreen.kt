@@ -19,9 +19,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -47,6 +51,7 @@ import com.verbum.core.ui.components.VerbumLoadingIndicator
 import com.verbum.core.ui.theme.CrimsonTextFamily
 import com.verbum.core.ui.theme.LocalLiturgicalSeason
 import com.verbum.core.ui.theme.VerbumSpacing
+import com.verbum.core.ui.theme.VerbumShapes
 import androidx.compose.material3.Surface
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import com.verbum.core.ui.theme.VerbumPreviewVariant
@@ -79,60 +84,68 @@ private fun MissalContent(
     )
 
     Column(modifier = modifier.fillMaxSize()) {
-        TopAppBar(
-            title = {
-                Column {
-                    Text(
-                        text = "Today\u2019s Mass",
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontWeight = FontWeight.Bold,
+        // Header
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = VerbumSpacing.screenPadding)
+                .padding(top = VerbumSpacing.sm)
+        ) {
+            Text(
+                text = "Today's Mass",
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            Text(
+                text = "Daily readings and liturgical texts",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        // Liturgical season banner — gradient with icon
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp)
+                .padding(horizontal = VerbumSpacing.screenPadding)
+                .padding(top = VerbumSpacing.sm)
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(
+                            containerColor.copy(alpha = 0.25f),
+                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
                         ),
+                    ),
+                    RoundedCornerShape(16.dp),
+                )
+                .padding(VerbumSpacing.md),
+            contentAlignment = Alignment.CenterStart,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text(
+                        text = season.displayName,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
-                        text = "Liturgy of the Word",
+                        text = "Liturgical Season",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent,
-            ),
-        )
-
-        // Liturgical season banner — gradient
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.horizontalGradient(
-                        listOf(
-                            containerColor,
-                            containerColor.copy(alpha = 0.6f),
-                        ),
-                    ),
-                )
-                .padding(horizontal = VerbumSpacing.screenPadding, vertical = VerbumSpacing.md),
-            contentAlignment = Alignment.CenterStart,
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.onPrimaryContainer),
-                )
-                Spacer(Modifier.width(VerbumSpacing.sm))
-                Text(
-                    text = season.displayName.uppercase(),
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        letterSpacing = 3.sp,
-                        fontWeight = FontWeight.Bold,
-                    ),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                Icon(
+                    imageVector = Icons.Outlined.AutoAwesome,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
                 )
             }
         }
+
+        HorizontalDivider()
 
         when (uiState) {
             is MissalUiState.Loading -> VerbumLoadingIndicator(message = "Preparing the Liturgy of the Word\u2026")
@@ -143,29 +156,32 @@ private fun MissalContent(
                 LazyColumn(
                     contentPadding = PaddingValues(
                         horizontal = VerbumSpacing.screenPadding,
-                        vertical = VerbumSpacing.md,
+                        vertical = VerbumSpacing.lg,
                     ),
-                    verticalArrangement = Arrangement.spacedBy(VerbumSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(VerbumSpacing.lg),
                 ) {
-                    // Feast or memorial
-                    readings.feastOrMemorial?.let { feast ->
-                        item {
-                            Text(
-                                text = feast,
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontStyle = FontStyle.Italic,
-                                ),
-                                color = MaterialTheme.colorScheme.primary,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = VerbumSpacing.sm),
-                            )
-                        }
+                    // Title
+                    item {
+                        Text(
+                            text = readings.feastOrMemorial ?: "Daily Readings",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontFamily = CrimsonTextFamily,
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
                     }
 
-                    items(readings.readings, key = { it.id }) { reading ->
+                    // Date
+                    item {
+                        Text(
+                            text = readings.date,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    // Readings
+                    items(readings.readings, key = { it.reference }) { reading ->
                         ReadingCard(reading = reading)
                     }
                 }

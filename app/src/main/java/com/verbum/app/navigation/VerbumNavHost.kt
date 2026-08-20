@@ -31,6 +31,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -45,16 +47,17 @@ import com.verbum.feature.auth.ui.AuthScreen
 import com.verbum.feature.bible.ui.BibleDiagnosticsScreen
 import com.verbum.feature.bible.ui.BibleReaderScreen
 import com.verbum.feature.bible.ui.BibleScreen
+import com.verbum.feature.bible.ui.BibleViewModel
 import com.verbum.feature.calendar.ui.LiturgicalCalendarScreen
 import com.verbum.feature.community.ui.CommunityFeedScreen
 import com.verbum.feature.community.ui.CreatePostScreen
 import com.verbum.feature.home.HomeScreen
 import com.verbum.feature.home.HomeViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.verbum.feature.missal.ui.MissalScreen
 import com.verbum.feature.prayer.ui.PrayerDetailScreen
 import com.verbum.feature.prayer.ui.PrayerScreen
 import com.verbum.feature.profile.ui.ProfileScreen
+import timber.log.Timber
 
 private const val NAV_ANIM_DURATION = 300
 
@@ -231,9 +234,12 @@ fun VerbumApp() {
             // ── Bible ──
             composable(VerbumDestination.Bible.route) {
                 BibleScreen(
-                    onBookChapterSelected = { bookId, chapter ->
+                    onBookChapterSelected = { bookId, chapter, verse, verses ->
+                        navController.currentBackStackEntry?.savedStateHandle?.set(
+                            "initialVerses", verses
+                        )
                         navController.navigate(
-                            VerbumDestination.BibleReader.createRoute(bookId, chapter)
+                            VerbumDestination.BibleReader.createRoute(bookId, chapter, verse)
                         )
                     },
                     onOpenDiagnostics = if (BuildConfig.DEBUG) {
@@ -255,6 +261,7 @@ fun VerbumApp() {
                 }
             }
 
+            // ── Bible Reader ──
             composable(
                 route = VerbumDestination.BibleReader.route,
                 arguments = listOf(
@@ -262,10 +269,37 @@ fun VerbumApp() {
                     navArgument("chapter") { type = NavType.IntType },
                     navArgument("verse") { type = NavType.IntType; defaultValue = -1 },
                 ),
-            ) {
+            ) { backStackEntry ->
+                val savedStateHandle = backStackEntry.savedStateHandle
+                // Try to get verses from the current entry first, then from previous entries
+                var initialVerses = savedStateHandle.get<List<com.verbum.feature.bible.domain.model.Verse>>("initialVerses")
+                Timber.d("BibleReader: initialVerses from current entry = ${initialVerses?.size ?: "null"}")
+                if (initialVerses == null) {
+                    // Check previous back stack entries for the verses
+                    navController.previousBackStackEntry?.savedStateHandle?.get<List<com.verbum.feature.bible.domain.model.Verse>>("initialVerses")?.let {
+                        Timber.d("BibleReader: Found verses in previous entry: ${it.size}")
+                        initialVerses = it
+                        savedStateHandle.set("initialVerses", it)
+                    }
+                }
+                
                 BibleReaderScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onAskAi = { navController.navigate(VerbumDestination.AiChat.route) },
+                    onBookSwitchNeeded = { bookId, chapter, verse, verses ->
+                        Timber.d("onBookSwitchNeeded: bookId=$bookId, chapter=$chapter, verse=$verse, verses=${verses?.size ?: "null"}")
+                        // Set verses on the current entry before navigation
+                        savedStateHandle.set("initialVerses", verses)
+                        
+                        // Navigate to new book
+                        navController.navigate(
+                            VerbumDestination.BibleReader.createRoute(bookId, chapter, verse)
+                        ) {
+                            // Pop to the BibleReader route to avoid stacking multiple instances
+                            popUpTo(VerbumDestination.BibleReader.route) { inclusive = false }
+                        }
+                    },
+                    initialVerses = initialVerses,
                 )
             }
 

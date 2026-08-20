@@ -22,15 +22,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -42,6 +42,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -57,6 +58,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import timber.log.Timber
 import com.verbum.core.ui.components.VerbumErrorState
 import com.verbum.core.ui.components.VerbumLoadingIndicator
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -70,7 +72,7 @@ import com.verbum.feature.bible.domain.model.Testament
 
 @Composable
 fun BibleScreen(
-    onBookChapterSelected: (bookId: Int, chapter: Int) -> Unit,
+    onBookChapterSelected: (bookId: Int, chapter: Int, verse: Int?, verses: List<com.verbum.feature.bible.domain.model.Verse>?) -> Unit,
     onOpenDiagnostics: (() -> Unit)? = null,
     showDiagnosticsButton: Boolean = false,
     modifier: Modifier = Modifier,
@@ -95,7 +97,7 @@ private fun BibleContent(
     uiState: BibleUiState,
     onSearchQueryChanged: (String) -> Unit,
     onRefreshOnline: () -> Unit,
-    onBookChapterSelected: (bookId: Int, chapter: Int) -> Unit,
+    onBookChapterSelected: (bookId: Int, chapter: Int, verse: Int?, verses: List<com.verbum.feature.bible.domain.model.Verse>?) -> Unit,
     onOpenDiagnostics: (() -> Unit)? = null,
     showDiagnosticsButton: Boolean = false,
     modifier: Modifier = Modifier,
@@ -128,7 +130,7 @@ private fun BibleContent(
                 if (showDiagnosticsButton && onOpenDiagnostics != null) {
                     IconButton(onClick = onOpenDiagnostics) {
                         Icon(
-                            imageVector = Icons.Outlined.BugReport,
+                            imageVector = Icons.Filled.BugReport,
                             contentDescription = "Bible diagnostics",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -204,7 +206,13 @@ private fun BibleContent(
                                 chapter = verse.chapter,
                                 verseNumber = verse.verseNumber,
                                 text = verse.text,
-                                onClick = { onBookChapterSelected(verse.bookId, verse.chapter) },
+                                onClick = { 
+                                    // Always pass all search results for multi-verse navigation
+                                    Timber.d("Search result clicked: bookId=${verse.bookId}, chapter=${verse.chapter}, verse=${verse.verseNumber}")
+                                    Timber.d("Total search results: ${uiState.searchResults.size}")
+                                    Timber.d("Search results: ${uiState.searchResults.map { "${it.bookName} ${it.chapter}:${it.verseNumber}" }}")
+                                    onBookChapterSelected(verse.bookId, verse.chapter, verse.verseNumber, uiState.searchResults)
+                                },
                             )
                         }
                     }
@@ -266,7 +274,7 @@ private fun BibleContent(
                                 BookListItem(
                                     book = book,
                                     onChapterSelected = { chapter ->
-                                        onBookChapterSelected(book.id, chapter)
+                                        onBookChapterSelected(book.id, chapter, null, null)
                                     },
                                 )
                             }
@@ -386,7 +394,7 @@ private fun BibleScreenPreview(
                 ),
                 onSearchQueryChanged = {},
                 onRefreshOnline = {},
-                onBookChapterSelected = { _, _ -> },
+                onBookChapterSelected = { _, _, _, _ -> },
                 onOpenDiagnostics = {},
                 showDiagnosticsButton = true,
             )

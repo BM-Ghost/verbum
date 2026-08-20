@@ -15,6 +15,7 @@ import com.verbum.feature.bible.domain.model.Verse
 import com.verbum.feature.bible.ui.reading.ChapterBlock
 import com.verbum.feature.bible.ui.reading.ReadingMode
 import com.verbum.feature.bible.ui.reading.theme.ReadingThemeType
+import com.verbum.feature.bible.ui.TargetVerseLocation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,6 +51,8 @@ class BibleReaderViewModel @Inject constructor(
     private var pendingNavigationChapter: Int? = null
     private var searchJob: Job? = null
     private var suggestionJob: Job? = null
+    private var onBookSwitchNeeded: ((Int, Int, Int) -> Unit)? = null
+    private var pendingTargetVerses: List<Verse>? = null
 
     private val _uiState = MutableStateFlow<BibleReaderUiState>(BibleReaderUiState.Loading)
     val uiState: StateFlow<BibleReaderUiState> = _uiState.asStateFlow()
@@ -124,7 +128,7 @@ class BibleReaderViewModel @Inject constructor(
                             (existingBlocks + newBlock).sortedBy { it.chapter }
                         }
 
-                        BibleReaderUiState.Loaded(
+                        val loadedState = BibleReaderUiState.Loaded(
                             bookName = verses.firstOrNull()?.bookName.orEmpty(),
                             chapter = chapter,
                             totalChapters = totalChapters.value,
@@ -138,12 +142,29 @@ class BibleReaderViewModel @Inject constructor(
                             searchSuggestions = existingState?.searchSuggestions.orEmpty(),
                             searchResults = existingState?.searchResults.orEmpty(),
                             isLoadingNextChapter = existingState?.isLoadingNextChapter ?: false,
-                            targetVerse = existingState?.targetVerse ?: pendingInitialVerse.also { pendingInitialVerse = null },
+                            targetVerses = existingState?.targetVerses ?: if (pendingInitialVerse != null) setOf(pendingInitialVerse!!) else emptySet(),
+                            targetVerseRange = existingState?.targetVerseRange,
+                            currentTargetIndex = existingState?.currentTargetIndex ?: 0,
+                            targetVerseLocations = existingState?.targetVerseLocations ?: if (pendingInitialVerse != null) {
+                                listOf(TargetVerseLocation(bookId, verses.firstOrNull()?.bookName.orEmpty(), chapter, pendingInitialVerse!!))
+                            } else emptyList(),
                             crossReferences = existingState?.crossReferences.orEmpty(),
                             isLoadingCrossReferences = existingState?.isLoadingCrossReferences ?: false,
+                            currentVerse = existingState?.currentVerse ?: 1,
                         )
+                        
+                        loadedState.also { pendingInitialVerse = null }
                     }
                     is VerbumResult.Error -> BibleReaderUiState.Error("Failed to load chapter")
+                }
+                
+                // Apply pending target verses if state is now Loaded
+                val currentState = _uiState.value
+                if (currentState is BibleReaderUiState.Loaded && pendingTargetVerses != null) {
+                    Timber.d("observeVerses: Applying pending target verses (${pendingTargetVerses!!.size})")
+                    val tempVerses = pendingTargetVerses
+                    pendingTargetVerses = null
+                    setTargetVerses(tempVerses!!)
                 }
             }
             .launchIn(viewModelScope)
@@ -348,12 +369,17 @@ class BibleReaderViewModel @Inject constructor(
         if (nav != null) {
             suggestionJob?.cancel()
             searchJob?.cancel()
+            val targetVerses = if (nav.verse != null) setOf(nav.verse) else emptySet()
+            val targetLocations = if (nav.verse != null) {
+                listOf(TargetVerseLocation(bookId, current.bookName, nav.chapter, nav.verse))
+            } else emptyList()
             _uiState.value = current.copy(
                 showSearch = false,
                 searchQuery = "",
                 searchSuggestions = emptyList(),
                 searchResults = emptyList(),
-                targetVerse = nav.verse,
+                targetVerses = targetVerses,
+                targetVerseLocations = targetLocations,
             )
             if (nav.chapter != current.chapter) {
                 navigateToChapter(nav.chapter)
@@ -395,7 +421,8 @@ class BibleReaderViewModel @Inject constructor(
             searchQuery = "",
             searchSuggestions = emptyList(),
             searchResults = emptyList(),
-            targetVerse = verse.verseNumber,
+            targetVerses = setOf(verse.verseNumber),
+            targetVerseLocations = listOf(TargetVerseLocation(verse.bookId, verse.bookName, verse.chapter, verse.verseNumber)),
         )
         selectedChapter.value = verse.chapter
     }
@@ -408,14 +435,180 @@ class BibleReaderViewModel @Inject constructor(
             searchResults = emptyList(),
             searchQuery = "",
             searchSuggestions = emptyList(),
-            targetVerse = verse.verseNumber,
+            targetVerses = setOf(verse.verseNumber),
+            targetVerseLocations = listOf(TargetVerseLocation(verse.bookId, verse.bookName, verse.chapter, verse.verseNumber)),
         )
         selectedChapter.value = verse.chapter
     }
 
     fun onTargetVerseConsumed() {
+        // No-op - highlights persist until book exit
+    }
+
+    fun hasNextTargetVerse(): Boolean {
+        val current = _uiState.value as? BibleReaderUiState.Loaded ?: return false
+        val result = current.currentTargetIndex < current.targetVerseLocations.size - 1
+        Timber.d("hasNextTargetVerse: currentTargetIndex=${current.currentTargetIndex}, totalLocations=${current.targetVerseLocations.size}, result=$result")
+        return result
+    }
+
+    fun hasPreviousTargetVerse(): Boolean {
+        val current = _uiState.value as? BibleReaderUiState.Loaded ?: return false
+        val result = current.currentTargetIndex > 0
+        Timber.d("hasPreviousTargetVerse: currentTargetIndex=${current.currentTargetIndex}, result=$result")
+        return result
+    }
+
+    fun goToNextTargetVerse() {
         val current = _uiState.value as? BibleReaderUiState.Loaded ?: return
-        _uiState.value = current.copy(targetVerse = null)
+        Timber.d("goToNextTargetVerse called")
+        if (!hasNextTargetVerse()) {
+            Timber.d("No next target verse available")
+            return
+        }
+        
+        // Find the next location with a different book or chapter
+        val nextLocation = current.targetVerseLocations
+            .drop(current.currentTargetIndex + 1)
+            .firstOrNull { it.bookId != bookId || it.chapter != current.chapter }
+        
+        if (nextLocation != null) {
+            // Navigate to the next chapter/book
+            val newIndex = current.targetVerseLocations.indexOf(nextLocation)
+            Timber.d("Navigating to next chapter/book: index=$newIndex, location=${nextLocation.bookName} ${nextLocation.chapter}:${nextLocation.verse}")
+            navigateToLocation(nextLocation, newIndex)
+        } else {
+            Timber.d("No more chapters/books to navigate to")
+        }
+    }
+
+    fun goToPreviousTargetVerse() {
+        val current = _uiState.value as? BibleReaderUiState.Loaded ?: return
+        Timber.d("goToPreviousTargetVerse called")
+        if (!hasPreviousTargetVerse()) {
+            Timber.d("No previous target verse available")
+            return
+        }
+        
+        // Find the previous location with a different book or chapter
+        val previousLocation = current.targetVerseLocations
+            .take(current.currentTargetIndex)
+            .lastOrNull { it.bookId != bookId || it.chapter != current.chapter }
+        
+        if (previousLocation != null) {
+            // Navigate to the previous chapter/book
+            val newIndex = current.targetVerseLocations.indexOf(previousLocation)
+            Timber.d("Navigating to previous chapter/book: index=$newIndex, location=${previousLocation.bookName} ${previousLocation.chapter}:${previousLocation.verse}")
+            navigateToLocation(previousLocation, newIndex)
+        } else {
+            Timber.d("No more chapters/books to navigate to")
+        }
+    }
+
+    fun setTargetVerses(verses: List<Verse>) {
+        val current = _uiState.value as? BibleReaderUiState.Loaded
+        if (current == null) {
+            Timber.d("setTargetVerses: UI state not Loaded, storing pending verses (${verses.size})")
+            pendingTargetVerses = verses
+            return
+        }
+        
+        Timber.d("setTargetVerses called with ${verses.size} verses")
+        Timber.d("Verses: ${verses.map { "${it.bookName} ${it.chapter}:${it.verseNumber}" }}")
+        Timber.d("Current bookId: $bookId, current chapter: ${current.chapter}")
+        
+        val targetLocations = verses.map { 
+            TargetVerseLocation(it.bookId, it.bookName, it.chapter, it.verseNumber) 
+        }
+        
+        // Group verses by chapter AND book
+        val versesByBookAndChapter = verses.groupBy { "${it.bookId}_${it.chapter}" }
+        
+        // Set target verses for current chapter (only if same book)
+        val currentKey = "${bookId}_${current.chapter}"
+        val currentChapterVerses = versesByBookAndChapter[currentKey]?.map { it.verseNumber }?.toSet() ?: emptySet()
+        
+        Timber.d("Current chapter verses: $currentChapterVerses")
+        
+        // Check if verses form a continuous range in current chapter
+        val targetRange = if (currentChapterVerses.size > 1) {
+            val sortedVerses = currentChapterVerses.sorted()
+            val first = sortedVerses.first()
+            val last = sortedVerses.last()
+            val expectedRange = (first..last).toSet()
+            if (expectedRange == currentChapterVerses) first to last else null
+        } else null
+        
+        Timber.d("Target range: $targetRange")
+        Timber.d("Target locations count: ${targetLocations.size}")
+        
+        _uiState.value = current.copy(
+            targetVerses = currentChapterVerses,
+            targetVerseRange = targetRange,
+            targetVerseLocations = targetLocations,
+            currentTargetIndex = 0,
+        )
+    }
+
+    fun clearTargetVerses() {
+        val current = _uiState.value as? BibleReaderUiState.Loaded ?: return
+        _uiState.value = current.copy(
+            targetVerses = emptySet(),
+            targetVerseRange = null,
+            targetVerseLocations = emptyList(),
+            currentTargetIndex = 0,
+        )
+    }
+
+    private fun navigateToLocation(location: TargetVerseLocation, newIndex: Int = 0) {
+        val current = _uiState.value as? BibleReaderUiState.Loaded ?: return
+        
+        Timber.d("navigateToLocation called: bookId=${location.bookId}, chapter=${location.chapter}, verse=${location.verse}, newIndex=$newIndex")
+        Timber.d("Current bookId: $bookId, current chapter: ${current.chapter}")
+        
+        // Check if we need to switch books
+        if (location.bookId != bookId) {
+            Timber.d("Book switch needed: from $bookId to ${location.bookId}")
+            Timber.d("onBookSwitchNeeded callback is ${if (onBookSwitchNeeded != null) "set" else "NULL"}")
+            onBookSwitchNeeded?.invoke(location.bookId, location.chapter, location.verse)
+            return
+        }
+        
+        // Same book, navigate to chapter
+        if (location.chapter != current.chapter) {
+            Timber.d("Chapter navigation needed: from ${current.chapter} to ${location.chapter}")
+            navigateToChapter(location.chapter)
+        }
+        
+        // Update target verses for new chapter
+        val versesInChapter = current.targetVerseLocations.filter { 
+            it.chapter == location.chapter && it.bookId == bookId 
+        }
+        Timber.d("Verses in target chapter: ${versesInChapter.size}")
+        if (versesInChapter.isNotEmpty()) {
+            val verseNumbers = versesInChapter.map { it.verse }.toSet()
+            
+            // Check if verses form a continuous range
+            val targetRange = if (verseNumbers.size > 1) {
+                val sortedVerses = verseNumbers.sorted()
+                val first = sortedVerses.first()
+                val last = sortedVerses.last()
+                val expectedRange = (first..last).toSet()
+                if (expectedRange == verseNumbers) first to last else null
+            } else null
+            
+            Timber.d("Updated target verses: $verseNumbers, range: $targetRange")
+            
+            _uiState.value = current.copy(
+                targetVerses = verseNumbers,
+                targetVerseRange = targetRange,
+                currentTargetIndex = newIndex,
+            )
+        }
+    }
+
+    fun setBookSwitchCallback(callback: (Int, Int, Int) -> Unit) {
+        onBookSwitchNeeded = callback
     }
 
     private fun parseInReaderShorthand(query: String, currentChapter: Int): InReaderNav? {

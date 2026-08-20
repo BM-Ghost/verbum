@@ -67,6 +67,14 @@ sealed class VerbumDestination(
             "bible/$bookId/$chapter" + (verse?.let { "?verse=$it" } ?: "")
     }
 
+    data object BibleReaderWithVerses : VerbumDestination(
+        route = "bible/{bookId}/{chapter}/verses",
+        title = "Read",
+    ) {
+        fun createRoute(bookId: Int, chapter: Int) =
+            "bible/$bookId/$chapter/verses"
+    }
+
     data object PrayerDetail : VerbumDestination(
         route = "prayer/{prayerId}",
         title = "Prayer",

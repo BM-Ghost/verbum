@@ -81,14 +81,16 @@ class BibleViewModel @Inject constructor(
         if (current.isRefreshingOnline) return
         _uiState.value = current.copy(isRefreshingOnline = true, onlineMessage = null)
         viewModelScope.launch {
-            val result = refreshBibleOnline()
+            val message = try {
+                val count = refreshBibleOnline()
+                "Updated $count local verses"
+            } catch (e: Exception) {
+                "Offline cache kept: ${e.message ?: "refresh unavailable"}"
+            }
             val latest = _uiState.value as? BibleUiState.BooksLoaded ?: return@launch
             _uiState.value = latest.copy(
                 isRefreshingOnline = false,
-                onlineMessage = result.fold(
-                    onSuccess = { "Updated $it local verses" },
-                    onFailure = { "Offline cache kept: ${it.message ?: "refresh unavailable"}" },
-                ),
+                onlineMessage = message,
             )
         }
     }

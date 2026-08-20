@@ -19,6 +19,23 @@ class SearchBibleUseCase @Inject constructor(
         val trimmed = query.trim()
         if (trimmed.length < 2) return emptyList()
 
+        // First try multi-reference (comma-separated)
+        val multiRef = parseMultiReference(trimmed)
+        if (multiRef != null) {
+            val allVerses = mutableListOf<Verse>()
+            for (ref in multiRef.refs) {
+                val results = repository.searchByReference(
+                    bookQuery = ref.book,
+                    chapter = ref.chapter,
+                    verseStart = ref.verseStart,
+                    verseEnd = ref.verseEnd,
+                )
+                allVerses.addAll(results)
+            }
+            if (allVerses.isNotEmpty()) return allVerses
+        }
+
+        // Then try single reference
         val ref = parseReference(trimmed)
         if (ref != null) {
             val results = repository.searchByReference(
@@ -31,6 +48,28 @@ class SearchBibleUseCase @Inject constructor(
         }
 
         return repository.searchVerses(trimmed)
+    }
+
+    /**
+     * Parse multiple comma-separated references.
+     * e.g., "John 3:16, Romans 8:28" → MultiScriptureRef with two references
+     */
+    private fun parseMultiReference(input: String): MultiScriptureRef? {
+        val s = input.trim().replace(Regex("\\s+"), " ")
+        
+        // Split by comma to get individual references
+        val parts = s.split(",").map { it.trim() }
+        if (parts.size <= 1) return null
+        
+        val refs = mutableListOf<ScriptureRef>()
+        for (part in parts) {
+            val ref = parseReference(part)
+            if (ref != null) {
+                refs.add(ref)
+            }
+        }
+        
+        return if (refs.isNotEmpty()) MultiScriptureRef(refs) else null
     }
 
     /**
@@ -128,6 +167,10 @@ class SearchBibleUseCase @Inject constructor(
         val chapter: Int,
         val verseStart: Int?,
         val verseEnd: Int?,
+    )
+
+    private data class MultiScriptureRef(
+        val refs: List<ScriptureRef>
     )
 
     companion object {

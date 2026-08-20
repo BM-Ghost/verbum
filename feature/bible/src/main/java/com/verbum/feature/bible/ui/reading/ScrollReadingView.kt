@@ -66,7 +66,8 @@ fun ScrollReadingView(
     onLoadNextChapter: () -> Unit,
     onVisibleChapterChange: (Int) -> Unit,
     onVisibleVerseChange: (chapter: Int, verse: Int) -> Unit,
-    targetVerse: Int? = null,
+    targetVerses: Set<Int> = emptySet(),
+    targetVerseRange: Pair<Int, Int>? = null,
     onTargetVerseConsumed: () -> Unit = {},
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
@@ -116,16 +117,16 @@ fun ScrollReadingView(
         }
     }
 
-    // Scroll to requested verse in current chapter.
-    LaunchedEffect(currentChapter, targetVerse, chapters) {
-        val verse = targetVerse ?: return@LaunchedEffect
+    // Scroll to requested verses in current chapter.
+    LaunchedEffect(currentChapter, targetVerses, chapters) {
+        val firstTarget = targetVerses.minOrNull() ?: return@LaunchedEffect
         var targetIndex = -1
         var index = 0
         chapters.forEachIndexed { chapterIndex, block ->
             if (chapterIndex > 0) index += 1 // divider
             index += 1 // header
             block.verses.forEach { v ->
-                if (block.chapter == currentChapter && v.verseNumber == verse) {
+                if (block.chapter == currentChapter && v.verseNumber == firstTarget) {
                     targetIndex = index
                     return@forEach
                 }
@@ -336,6 +337,8 @@ fun ScrollReadingView(
                             theme = theme,
                             isFirstVerse = verse.verseNumber == 1 && theme.showDropCap,
                             onClick = { onVerseClick(verse) },
+                            targetVerses = targetVerses,
+                            targetVerseRange = targetVerseRange,
                         )
                     }
                 }
@@ -572,7 +575,19 @@ internal fun ThemedVerseItem(
     isFirstVerse: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    targetVerses: Set<Int> = emptySet(),
+    targetVerseRange: Pair<Int, Int>? = null,
 ) {
+    // Check if verse should be highlighted
+    val isHighlighted = targetVerses.contains(verse.verseNumber) || 
+        (targetVerseRange != null && verse.verseNumber >= targetVerseRange.first && verse.verseNumber <= targetVerseRange.second)
+    
+    val backgroundColor = if (isHighlighted) {
+        theme.accentColor.copy(alpha = 0.32f)
+    } else {
+        androidx.compose.ui.graphics.Color.Transparent
+    }
+
     if (isFirstVerse && verse.text.isNotEmpty()) {
         // Drop-cap layout: large first letter + rest of verse
         val firstChar = verse.text.first().toString()
@@ -581,6 +596,7 @@ internal fun ThemedVerseItem(
         Row(
             modifier = modifier
                 .fillMaxWidth()
+                .background(backgroundColor)
                 .clickable(onClick = onClick)
                 .padding(vertical = theme.verseSpacing),
         ) {
@@ -622,6 +638,7 @@ internal fun ThemedVerseItem(
             color = theme.textColor,
             modifier = modifier
                 .fillMaxWidth()
+                .background(backgroundColor)
                 .clickable(onClick = onClick)
                 .padding(vertical = theme.verseSpacing),
         )

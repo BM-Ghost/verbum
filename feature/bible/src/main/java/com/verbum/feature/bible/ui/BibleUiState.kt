@@ -38,10 +38,27 @@ sealed interface BibleReaderUiState {
         val searchSuggestions: List<Verse> = emptyList(),
         val searchResults: List<Verse> = emptyList(),
         val isLoadingNextChapter: Boolean = false,
-        /** When non-null, ScrollReadingView will scroll to this verse then clear it. */
-        val targetVerse: Int? = null,
+        /** Multiple target verses for highlighting and navigation */
+        val targetVerses: Set<Int> = emptySet(),
+        /** Target verse range for continuous highlighting */
+        val targetVerseRange: Pair<Int, Int>? = null,
+        /** Current index in target verse locations for navigation */
+        val currentTargetIndex: Int = 0,
+        /** All target verse locations across chapters/books */
+        val targetVerseLocations: List<TargetVerseLocation> = emptyList(),
+        /** Cross references for selected verse */
         val crossReferences: List<BibleCrossReference> = emptyList(),
         val isLoadingCrossReferences: Boolean = false,
+        /** Currently visible verse for continue reading */
+        val currentVerse: Int = 1,
     ) : BibleReaderUiState
     data class Error(val message: String) : BibleReaderUiState
 }
+
+/** Represents a target verse location for navigation */
+data class TargetVerseLocation(
+    val bookId: Int,
+    val bookName: String,
+    val chapter: Int,
+    val verse: Int,
+)

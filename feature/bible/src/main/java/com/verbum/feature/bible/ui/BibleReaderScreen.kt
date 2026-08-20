@@ -3,7 +3,9 @@ package com.verbum.feature.bible.ui
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,30 +14,39 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.verbum.core.ui.components.VerbumErrorState
 import com.verbum.core.ui.components.VerbumLoadingIndicator
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import com.verbum.core.ui.theme.CrimsonTextFamily
 import com.verbum.core.ui.theme.VerbumPreviewVariant
@@ -53,15 +64,47 @@ import com.verbum.feature.bible.ui.reading.ScrollReadingView
 import com.verbum.feature.bible.ui.reading.SearchResultsOverlay
 import com.verbum.feature.bible.ui.reading.VerseSearchBar
 import com.verbum.feature.bible.ui.reading.theme.ReadingThemeType
+import com.verbum.feature.bible.ui.TargetVerseLocation
+import timber.log.Timber
 
 @Composable
 fun BibleReaderScreen(
     onNavigateBack: () -> Unit,
     onAskAi: (String) -> Unit,
+    onBookSwitchNeeded: (bookId: Int, chapter: Int, verse: Int, verses: List<com.verbum.feature.bible.domain.model.Verse>?) -> Unit = { _, _, _, _ -> },
+    initialVerses: List<com.verbum.feature.bible.domain.model.Verse>? = null,
     modifier: Modifier = Modifier,
     viewModel: BibleReaderViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Set initial verses if provided
+    LaunchedEffect(initialVerses) {
+        Timber.d("LaunchedEffect: initialVerses = ${initialVerses?.size ?: "null"}")
+        if (initialVerses != null && initialVerses.isNotEmpty()) {
+            Timber.d("Calling setTargetVerses with ${initialVerses.size} verses")
+            viewModel.setTargetVerses(initialVerses)
+        }
+    }
+
+    // Set up book switch callback immediately
+    LaunchedEffect(Unit) {
+        viewModel.setBookSwitchCallback { bookId, chapter, verse ->
+            Timber.d("Book switch callback invoked: bookId=$bookId, chapter=$chapter, verse=$verse")
+            // Get current target verse locations from viewModel
+            val currentUiState = viewModel.uiState.value as? BibleReaderUiState.Loaded
+            val verses = currentUiState?.targetVerseLocations?.map { 
+                com.verbum.feature.bible.domain.model.Verse(
+                    bookId = it.bookId,
+                    bookName = it.bookName,
+                    chapter = it.chapter,
+                    verseNumber = it.verse,
+                    text = ""
+                )
+            } ?: emptyList()
+            onBookSwitchNeeded(bookId, chapter, verse, verses)
+        }
+    }
 
     BibleReaderContent(
         uiState = uiState,
@@ -81,13 +124,19 @@ fun BibleReaderScreen(
         onSearch = viewModel::onSearch,
         onClearSearch = viewModel::onClearSearch,
           onSuggestionClick = viewModel::onSearchSuggestionClick,
-        onSearchResultClick = viewModel::onSearchResultClick,
+        onSearchResultClick = { verse ->
+            viewModel.onSearchResultClick(verse)
+        },
         onVisibleChapterChange = viewModel::onVisibleChapterChange,
           onVisibleVerseChange = viewModel::onVisibleVerseChange,
           onTargetVerseConsumed = viewModel::onTargetVerseConsumed,
         onAskAi = { verse ->
             onAskAi("${verse.bookName} ${verse.chapter}:${verse.verseNumber}")
         },
+        goToPreviousTargetVerse = viewModel::goToPreviousTargetVerse,
+        hasPreviousTargetVerse = viewModel::hasPreviousTargetVerse,
+        goToNextTargetVerse = viewModel::goToNextTargetVerse,
+        hasNextTargetVerse = viewModel::hasNextTargetVerse,
         modifier = modifier,
     )
 }
@@ -117,6 +166,10 @@ private fun BibleReaderContent(
     onVisibleVerseChange: (chapter: Int, verse: Int) -> Unit,
     onTargetVerseConsumed: () -> Unit,
     onAskAi: (Verse) -> Unit,
+    goToPreviousTargetVerse: () -> Unit,
+    hasPreviousTargetVerse: () -> Boolean,
+    goToNextTargetVerse: () -> Unit,
+    hasNextTargetVerse: () -> Boolean,
     modifier: Modifier = Modifier,
 ) {
     when (uiState) {
@@ -178,7 +231,8 @@ private fun BibleReaderContent(
                                 onLoadNextChapter = onLoadNextChapter,
                                 onVisibleChapterChange = onVisibleChapterChange,
                                   onVisibleVerseChange = onVisibleVerseChange,
-                                  targetVerse = uiState.targetVerse,
+                                  targetVerses = uiState.targetVerses,
+                                  targetVerseRange = uiState.targetVerseRange,
                                   onTargetVerseConsumed = onTargetVerseConsumed,
                                 modifier = Modifier.weight(1f),
                             )
@@ -222,6 +276,63 @@ private fun BibleReaderContent(
                     onDismiss = onToggleSearch,
                     visible = uiState.searchResults.isNotEmpty(),
                 )
+
+                // Floating navigation controls for target verses
+                if (uiState.targetVerseLocations.isNotEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(16.dp)
+                            .padding(bottom = 100.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        // Previous verse button
+                        IconButton(
+                            onClick = goToPreviousTargetVerse,
+                            enabled = hasPreviousTargetVerse(),
+                            modifier = Modifier
+                                .size(50.dp)
+                                .shadow(
+                                    elevation = 8.dp,
+                                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                                )
+                                .background(
+                                    color = theme.toolbarBackground,
+                                    shape = CircleShape,
+                                ),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.KeyboardArrowUp,
+                                contentDescription = "Previous target verse",
+                                tint = theme.accentColor,
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+
+                        // Next verse button
+                        IconButton(
+                            onClick = goToNextTargetVerse,
+                            enabled = hasNextTargetVerse(),
+                            modifier = Modifier
+                                .size(50.dp)
+                                .shadow(
+                                    elevation = 8.dp,
+                                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                                )
+                                .background(
+                                    color = theme.toolbarBackground,
+                                    shape = CircleShape,
+                                ),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.KeyboardArrowDown,
+                                contentDescription = "Next target verse",
+                                tint = theme.accentColor,
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+                    }
+                }
 
                 // Bottom sheet for verse actions
                 uiState.selectedVerse?.let { verse ->
@@ -334,60 +445,101 @@ private fun BibleReaderPreview(
 ) {
     VerbumTheme(liturgicalSeason = variant.season, darkTheme = variant.darkTheme) {
         Surface(color = MaterialTheme.colorScheme.background) {
-        Column {
-            ReadingThemeType.entries.forEach { themeType ->
-                Text(
-                    text = "Reader Theme: ${themeType.displayName}",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = VerbumSpacing.md, vertical = VerbumSpacing.sm),
-                )
-                BibleReaderContent(
-                    uiState = BibleReaderUiState.Loaded(
-                        bookName = "John",
-                        chapter = 1,
-                        totalChapters = 21,
-                        verses = listOf(
-                            Verse(50, "John", 1, 1, "In the beginning was the Word, and the Word was with God, and the Word was God."),
-                            Verse(50, "John", 1, 2, "He was in the beginning with God."),
-                            Verse(50, "John", 1, 3, "All things were made through him, and without him was not any thing made that was made."),
+            Column {
+                ReadingThemeType.entries.forEach { themeType ->
+                    Text(
+                        text = "Reader Theme: ${themeType.displayName}",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(
+                            horizontal = VerbumSpacing.md,
+                            vertical = VerbumSpacing.sm
                         ),
-                        chapterBlocks = listOf(
-                            ChapterBlock(
-                                chapter = 1,
-                                verses = listOf(
-                                    Verse(50, "John", 1, 1, "In the beginning was the Word, and the Word was with God, and the Word was God."),
-                                    Verse(50, "John", 1, 2, "He was in the beginning with God."),
-                                    Verse(50, "John", 1, 3, "All things were made through him, and without him was not any thing made that was made."),
+                    )
+                    BibleReaderContent(
+                        uiState = BibleReaderUiState.Loaded(
+                            bookName = "John",
+                            chapter = 1,
+                            totalChapters = 21,
+                            verses = listOf(
+                                Verse(
+                                    50,
+                                    "John",
+                                    1,
+                                    1,
+                                    "In the beginning was the Word, and the Word was with God, and the Word was God."
+                                ),
+                                Verse(50, "John", 1, 2, "He was in the beginning with God."),
+                                Verse(
+                                    50,
+                                    "John",
+                                    1,
+                                    3,
+                                    "All things were made through him, and without him was not any thing made that was made."
                                 ),
                             ),
+                            chapterBlocks = listOf(
+                                ChapterBlock(
+                                    chapter = 1,
+                                    verses = listOf(
+                                        Verse(
+                                            50,
+                                            "John",
+                                            1,
+                                            1,
+                                            "In the beginning was the Word, and the Word was with God, and the Word was God."
+                                        ),
+                                        Verse(
+                                            50,
+                                            "John",
+                                            1,
+                                            2,
+                                            "He was in the beginning with God."
+                                        ),
+                                        Verse(
+                                            50,
+                                            "John",
+                                            1,
+                                            3,
+                                            "All things were made through him, and without him was not any thing made that was made."
+                                        ),
+                                    ),
+                                ),
+                            ),
+                            themeType = themeType,
+                            targetVerses = emptySet(),
+                            targetVerseRange = null,
+                            targetVerseLocations = emptyList(),
+                            currentTargetIndex = 0,
                         ),
-                        themeType = themeType,
-                    ),
-                    onNavigateBack = {},
-                    onVerseClick = {},
-                    onDismissVerseActions = {},
-                    onBookmarkClick = {},
-                    onPreviousChapter = {},
-                    onNextChapter = {},
-                    onChapterSelected = {},
-                    onLoadNextChapter = {},
-                    onReadingModeChange = {},
-                    onThemeChange = {},
-                    onToggleChapterNav = {},
-                    onToggleSearch = {},
-                    onSearchQueryChange = {},
-                    onSearch = {},
-                    onClearSearch = {},
-                      onSuggestionClick = {},
-                    onSearchResultClick = {},
-                    onVisibleChapterChange = {},
-                      onVisibleVerseChange = { _, _ -> },
-                      onTargetVerseConsumed = {},
-                    onAskAi = {},
-                )
+                        onNavigateBack = {},
+                        onVerseClick = {},
+                        onDismissVerseActions = {},
+                        onBookmarkClick = {},
+                        onPreviousChapter = {},
+                        onNextChapter = {},
+                        onChapterSelected = {},
+                        onLoadNextChapter = {},
+                        onReadingModeChange = {},
+                        onThemeChange = {},
+                        onToggleChapterNav = {},
+                        onToggleSearch = {},
+                        onSearchQueryChange = {},
+                        onSearch = {},
+                        onClearSearch = {},
+                        onSuggestionClick = {},
+                        onSearchResultClick = {},
+                        onVisibleChapterChange = {},
+                        onVisibleVerseChange = { _, _ -> },
+                        onTargetVerseConsumed = {},
+                        onAskAi = {},
+                        goToPreviousTargetVerse = {},
+                        hasPreviousTargetVerse = { false },
+                        goToNextTargetVerse = {},
+                        hasNextTargetVerse = { false },
+                    )
+                }
             }
         }
-    }
     }
 }
